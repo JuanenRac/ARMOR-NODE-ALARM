@@ -1,0 +1,209 @@
+{
+  "repo": "ARMOR-NODE-ALARM",
+  "ecosystem": "armor",
+  "tagline": "An alarm panel that decides by itself: zones, delays, PIN, siren and a Zigbee link that takes over when the server is gone; it is not a certified alarm system.",
+  "description": "The firmware of ARMOR-NODE-ALARM reads up to eight wired loops, turns them into zone states, runs the rules of the panel (arming, delays, alarm, silence, PIN with lockout) and drives its own siren relay. The state is kept in flash across restarts. Nothing has run on a board or in a real installation.",
+  "columns": [
+    "WHAT IS CONNECTED",
+    "THIS FIRMWARE",
+    "WHO IT TALKS TO"
+  ],
+  "nodes": [
+    {
+      "id": "loops",
+      "column": 0,
+      "level": "untested",
+      "title": "Loops, sensors, siren",
+      "lines": [
+        "up to 8 wired loops read by the",
+        "ADC, Zigbee sensors and siren,",
+        "4 buttons; none is connected"
+      ]
+    },
+    {
+      "id": "people",
+      "column": 0,
+      "level": "external",
+      "title": "Browser, phone",
+      "lines": [
+        "the panel and the PIN, and the",
+        "set-up over Bluetooth"
+      ]
+    },
+    {
+      "id": "rules",
+      "column": 1,
+      "level": "tested",
+      "title": "alarm_zone, alarm_panel",
+      "lines": [
+        "loop to state, arming, delays,",
+        "alarm, silence, PIN lockout;",
+        "state kept in flash"
+      ],
+      "code": [
+        "core/alarm_zone.hpp",
+        "core/alarm_panel.hpp",
+        "core/alarm_policy.hpp"
+      ]
+    },
+    {
+      "id": "json",
+      "column": 1,
+      "level": "contract",
+      "title": "alarm_message, mqtt",
+      "lines": [
+        "state, command and result of",
+        "the panel; the policy of the",
+        "server every 30 s"
+      ],
+      "code": [
+        "core/alarm_message.hpp",
+        "main/mqtt_link.cpp"
+      ]
+    },
+    {
+      "id": "siren",
+      "column": 1,
+      "level": "config",
+      "title": "relay_outputs",
+      "lines": [
+        "the siren relay belongs to the",
+        "alarm alone and starts open at",
+        "every restart"
+      ],
+      "code": [
+        "main/relay_outputs.cpp",
+        "core/relay_bank.hpp"
+      ]
+    },
+    {
+      "id": "zigbee",
+      "column": 1,
+      "level": "config",
+      "title": "zigbee_bridge",
+      "lines": [
+        "takes the radio when the server's",
+        "Zigbee goes silent and gives it",
+        "back; signed messages (HMAC)"
+      ],
+      "code": [
+        "main/zigbee_bridge.cpp",
+        "core/zigbee_ias.hpp",
+        "core/radio_owner.hpp"
+      ]
+    },
+    {
+      "id": "web",
+      "column": 1,
+      "level": "tested",
+      "title": "web_server, panel/",
+      "lines": [
+        "panel in eight languages, logins,",
+        "own HTTPS certificate, private",
+        "networks only by default"
+      ],
+      "code": [
+        "main/web_server.cpp",
+        "core/auth.hpp",
+        "panel/text.js"
+      ]
+    },
+    {
+      "id": "ota",
+      "column": 1,
+      "level": "contract",
+      "title": "github_update, ble",
+      "lines": [
+        "signed updates with rollback;",
+        "Bluetooth set-up with a PIN;",
+        "never run on a board"
+      ],
+      "code": [
+        "main/github_update.cpp",
+        "main/ble_provision.cpp"
+      ]
+    },
+    {
+      "id": "server",
+      "column": 2,
+      "level": "external",
+      "title": "Broker, ARMOR-SERVER",
+      "lines": [
+        "armor/alarm/<id>/state,",
+        "command, result, policy"
+      ]
+    },
+    {
+      "id": "github",
+      "column": 2,
+      "level": "external",
+      "title": "GitHub releases",
+      "lines": [
+        "the signed image of each",
+        "version, one per board"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "loops",
+      "to": "rules",
+      "label": "ADC",
+      "level": "untested"
+    },
+    {
+      "from": "people",
+      "to": "web",
+      "label": "",
+      "level": "tested"
+    },
+    {
+      "from": "rules",
+      "to": "json",
+      "label": "",
+      "level": "tested"
+    },
+    {
+      "from": "rules",
+      "to": "siren",
+      "label": "",
+      "level": "config"
+    },
+    {
+      "from": "zigbee",
+      "to": "siren",
+      "label": "",
+      "level": "config"
+    },
+    {
+      "from": "json",
+      "to": "zigbee",
+      "label": "",
+      "level": "config"
+    },
+    {
+      "from": "siren",
+      "to": "web",
+      "label": "",
+      "level": "tested"
+    },
+    {
+      "from": "web",
+      "to": "ota",
+      "label": "",
+      "level": "tested"
+    },
+    {
+      "from": "json",
+      "to": "server",
+      "label": "MQTT",
+      "level": "contract"
+    },
+    {
+      "from": "ota",
+      "to": "github",
+      "label": "HTTPS",
+      "level": "contract"
+    }
+  ]
+}

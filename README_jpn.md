@@ -18,17 +18,18 @@
 ### 警報ノードと警報盤：住宅の警報の警戒区域、警戒セット、遅延、サイレン、PIN を、ノードのファームウェアとコンピューターでテストしたルールを含みます（基板では動作していません）
 
 <p align="center">
-  <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
+  <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Language-C%2B%2B17-00599c.svg" alt="Language">
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-482%2C535-2ea44f.svg" alt="Checks">
+  <img src="https://img.shields.io/badge/Tests-488930%20checks-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.4.8-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
 </p>
 
 ---
 
-**正直さのチェック - 今日動いているもの:** 存在するのは**警報のコア**（警戒区域とは何か、ADC が読む配線ループがどう状態になるか、警報盤のルール：警戒、遅延、警報、サイレン、ロックアウト付き PIN）と、その上に作られた**ノードのファームウェア**（設定、Web パネル、サーバーとのメッセージ、Zigbee 無線のブリッジ、ネットワーク上の Zigbee コーディネーター、リレー、Bluetooth、署名付きアップデート）で、両方の基板向けにビルドできます。コア、設定、メッセージ、実際のブラウザーでの代替ノードに対するパネルは、14 つのテストプログラムで 486,690 項目としてコンピューター上でテストされています。**基板上でも実際の設備でも何も動いたことはなく、警戒区域の配線もサイレンの接続もなく、ノード自身の Zigbee コーディネーター（ローカルまたはネットワーク上）との通信は書かれて代替コーディネーターに対してテストされていますが、実際のコーディネーターやセンサーに対して動いたことはなく、これは認証済みの警報システムではありません。**
+**正直さのチェック - 今日動いているもの:** 存在するのは**警報のコア**（警戒区域とは何か、ADC が読む配線ループがどう状態になるか、警報盤のルール：警戒、遅延、警報、サイレン、ロックアウト付き PIN）と、その上に作られた**ノードのファームウェア**（設定、Web パネル、サーバーとのメッセージ、Zigbee 無線のブリッジ、ネットワーク上の Zigbee コーディネーター、リレー、Bluetooth、署名付きアップデート）で、両方の基板向けにビルドできます。コア、設定、メッセージ、実際のブラウザーでの代替ノードに対するパネルは、18 つのテストプログラムで 488,930 項目としてコンピューター上でテストされています。**基板上でも実際の設備でも何も動いたことはなく、警戒区域の配線もサイレンの接続もなく、ノード自身の Zigbee コーディネーター（ローカルまたはネットワーク上）との通信は書かれて代替コーディネーターに対してテストされていますが、実際のコーディネーターやセンサーに対して動いたことはなく、これは認証済みの警報システムではありません。**
 
 ---
 
@@ -38,9 +39,15 @@
 |---|---|
 | バージョン | `0.4.8` |
 | 成熟度 | 機能する |
-| テスト | 14 個のプログラムで 486,690 件のチェック（`ctest`） |
-| 技術 | C++17 host-tested core; ESP-IDF 5.5.5 firmware for the ESP32-S3 (PoE Ethernet and Wi-Fi boards) |
+| 役割 | ESP32-S3 用アラームパネルのフィールドノード（ファミリー：Field Nodes、親：ARMOR-COMMON） |
+| 技術 | C++17, ESP-IDF 5.5.5, ESP32-S3 |
+| テスト | 488930 件の検査（ホスト用プログラム 18 本と Python 検査 5 個、`ctest`） |
+| 入力 | 最大 8 本の配線ループ、Zigbee センサー（IAS Zone）とサイレン（IAS WD）、ボタン 4 個 |
+| 動作環境 | ベース基板付きの ESP32-S3 基板（Ethernet または Wi-Fi）、ホストテストは任意のコンピューター |
 | 実機での確認 | まだありません：基板、警戒区域、サイレン、Zigbee コーディネーターはいずれも未接続（コンピューター上のテスト、ビルド、ブラウザーでのパネルのみ） |
+| ライセンス | GPL-3.0-or-later |
+
+**移動先：** [概要](#-概要) · [アーキテクチャ](#-アーキテクチャ) · [セキュリティ](#-セキュリティと安全) · [インターフェース](#-インターフェース) · [設定](#-設定) · [クイックスタート](#-クイックスタート) · [テスト](#-テスト) · [トラブルシューティング](#-トラブルシューティング) · [構成](#-リポジトリの構成) · [関連](#-関連プロジェクト)
 
 ## 🚦 プロジェクトの状況
 
@@ -51,7 +58,7 @@
 | 領域 | 状態 | ここでの意味 |
 |---|---|---|
 | ソフトウェア | 🟢 | ファームウェアは ESP-IDF 5.5.5 コンテナで両方のボード（Wi-Fi とイーサネット）向けにビルドできます。 |
-| テスト | 🟢 | 14 のホストプログラムで 486,690 件のチェックが通ります（`ctest`）：ゾーン、ADC で読む有線ループ、警戒・遅延・サイレン・PIN の規則、設定、メッセージ。 |
+| テスト | 🟢 | 18 のホストプログラムで 488,930 件のチェックが通ります（`ctest`）：ゾーン、ADC で読む有線ループ、警戒・遅延・サイレン・PIN の規則、設定、メッセージ。 |
 | プロトコルとデータ | 🟠 | ノード自身のコーディネーター（ローカルまたはネットワーク上）との Zigbee のやり取りは、模擬のコーディネーターに対してのみテストしています。本物のコーディネーターやセンサーとはまだ接続していません。 |
 | インターフェース | 🟡 | Web パネルは実ブラウザーで模擬ノードに対して試しており、ボード上では試していません。 |
 | ハードウェア | 🔴 | ボードは未製作で、ゾーンの配線もサイレンや Zigbee コーディネーターの接続もありません。実際の設備ではまだ何も動かしていません。 |
@@ -70,7 +77,8 @@
 * **解除せずにサイレンを止める：** サイレンが鳴っている間、正しい PIN で警戒を保ったままサイレンをすぐ止められます - 警報はラッチされたまま記録に残り、まだ鳴っていない警戒区域は再びサイレンを鳴らせ、誤った PIN は解除時の誤った PIN と同じようにロックアウトに数えられます。
 * **計画：** 電気ノードの基板上のゲートウェイ（Zigbee 無線、配線区域、サイレン用リレー）。ARMOR-SERVER と連携し、**サーバーが不在でも警戒を続けます**：警報盤が ARMOR-NODE-ELECTRICAL の Zigbee ブリッジ経由でサーバーから無線を引き継ぎます。[設計](docs/DESIGN.md)と[引き継ぎ](docs/FAILOVER.md)を参照。
 * **ノード：** ESP32-S3 用ファームウェア（PoE イーサネットまたは Wi-Fi）。最大 8 つの配線区域、リレーに接続したサイレン、全ノード共通の 8 言語の Web パネル、Zigbee2MQTT に貸し出す Zigbee 無線、そしてメッセージ `armor/alarm/<ノード>/state|command|result`。サーバーが警戒セット・解除できるのは、独立した 3 つのスイッチがすべて許可した場合だけです。[ファームウェア](docs/NODE_FIRMWARE.md)、[メッセージ](docs/ALARM_MESSAGES.md)、[ハードウェア](docs/HARDWARE.md)を参照。
-* **無線の引き継ぎ：** サーバーの Zigbee2MQTT が設定時間いないと、ノードが自分でコーディネーターを起動し（ZNP）、センサーを指定した区域を読み取り（IAS Zone）、Zigbee サイレンを制御し（IAS WD）、クライアントが戻った瞬間に手放します。**まだ：** 実機のコーディネーターやセンサー、ハードウェア、実際の設備でのテスト。
+* **無線の引き継ぎ：** サーバーの Zigbee2MQTT が設定時間いないと、ノードが自分でコーディネーターを起動し（ZNP）、センサーを指定した区域を読み取り（IAS Zone）、Zigbee サイレンを制御し（IAS WD）、クライアントが戻った瞬間に手放します。
+* **まだ：** 実機のコーディネーターやセンサー、ハードウェア、実際の設備でのテスト。
 * **再起動しても家の警戒は解除されません：** モード、進行中の警報、除外したゾーンはフラッシュに保存され、起動時に復元されます。断線や短絡したループは決して除外されません。メッセージはキューを通る（ブローカーとのデッドロックなし）ため、ゾーンを読むタスクが止まるとウォッチドッグが基板を再起動します。
 * **署名付きの無線アップデート：**ノードが GitHub からインストールするのは、SHA-256 が一致し、管理者の有効な Ed25519 署名を持つイメージだけです（公開鍵はファームウェア内、秘密鍵は管理者の手元から出ません）。管理者がパネルで手動アップロードしたファイルは引き続き受け付けます。パネルのページとメッセージは 8 言語です。
 * **PIN 付きの Bluetooth ペアリング：**6 桁の PIN は設定コードから導出され、USB コンソールに表示され、管理者にはパネルにも表示されます。スマートフォンはこれを入力して初めてノードの設定を書き込めます。
@@ -85,6 +93,23 @@
 * **サーバーのセキュリティ設定：**パネルはサーバーが保持する設定（`armor/alarm/<ノード>/policy`）を適用し、それぞれをノード側で固定することもできます。保存された警戒状態はゾーンとPINに結び付けられ、サーバーのZigbeeゾーンメッセージはオフにでき、署名付きの場合は検証されます（パネルに入力した鍵による署名と、増える一方のシーケンス番号）。契約とサーバーが計算する値でコンピューター上でテスト済みで、ボード上ではまだ動作していません。
 * **保存された秘密情報の任意の封印:** 既定ではオフです(`security.seal_secrets`、またはサーバーの `nodes.nvs_encryption`)。オンにすると、ノードが保存するパスワード、トークン、鍵、PIN、パスワードのハッシュが ChaCha20-Poly1305 で封印され、それ以外は読めるままです。オン/オフの切り替えは何も失わずに書き直し、途中で止まっても大丈夫です。eFuse は焼かれず、フラッシュも暗号化されません。鍵は同じチップのパーティションにあるため、基板を手にした人に対する保護には**なりません**。このパーティションがない時期にインストールされたノードは、新しいパーティションテーブルで書き込むまで従来のままです。
 
+## 🧩 A.R.M.O.R. での役割
+
+ARMOR-NODE-ALARM は警報盤です。警戒区域、警戒、遅延、サイレン、PIN はノード自身で判断されるため、サーバーがいなくても家は守られます。[ARMOR-SERVER](https://github.com/JuanenRac/ARMOR-SERVER) がこれを表示し、Zigbee センサーをゾーンに結び付け、許可すれば警戒・解除も行います。[ARMOR-STUDIO](https://github.com/JuanenRac/ARMOR-STUDIO) の*警報盤*メニューと*警報デザイナー*、[ARMOR-ANDROID-CONTROL](https://github.com/JuanenRac/ARMOR-ANDROID-CONTROL) アプリが操作します。Zigbee 無線は基板上でも、ネットワーク上のコーディネーターでも構いません。
+
+| 名前 | 方法 | 用途 |
+|---|---|---|
+| ARMOR-SERVER | MQTT `armor/alarm/<id>/{state,command,result,zigbee,policy}` | パネルの状態を受け取り、アーム・ディスアーム・サイレンの命令は 3 つのスイッチを通した場合のみ |
+| ARMOR-STUDIO | アラームパネルのメニュー | ゾーン、イベント、ポリシーを表示し、ノードのパネルを開く |
+| ARMOR-ANDROID-CONTROL | Bluetooth | 現場でノードを設定し、アラームパネルを表示 |
+| ARMOR-COMMON | アラームのコントラクト | メッセージはそのスキーマで検証し、共通ファームウェアはここからコピー |
+
+## 🏛️ アーキテクチャ
+
+<p align="center">
+  <img src="images/architecture.svg" alt="ARMOR-NODE-ALARM のアーキテクチャ：呼び出し元、内部、依存先" width="100%">
+</p>
+
 ## 🖼️ スクリーンショット
 
 テストベンチで 1920×1080 で撮影。サンプルデータを使用しており、実際の設備は接続されていません。
@@ -94,68 +119,184 @@
 <tr><td width="50%" valign="top"><img src="images/screenshots/zigbee.png" alt="Zigbee 無線：コーディネーターモジュールへのシリアルブリッジ、使用を許可するクライアント、ブリッジの状態。" width="100%"><br><sub>Zigbee 無線：コーディネーターモジュールへのシリアルブリッジ、使用を許可するクライアント、ブリッジの状態。</sub></td><td width="50%" valign="top"><img src="images/screenshots/inputs-outputs.png" alt="リレーとサイレン：ベースボードの出力と、それぞれを動かすもの。" width="100%"><br><sub>リレーとサイレン：ベースボードの出力と、それぞれを動かすもの。</sub></td></tr>
 </table>
 
-## 🧩 A.R.M.O.R. での役割
+## 🔒 セキュリティと安全
 
-ARMOR-NODE-ALARM は警報盤です。警戒区域、警戒、遅延、サイレン、PIN はノード自身で判断されるため、サーバーがいなくても家は守られます。[ARMOR-SERVER](https://github.com/JuanenRac/ARMOR-SERVER) がこれを表示し、Zigbee センサーをゾーンに結び付け、許可すれば警戒・解除も行います。[ARMOR-STUDIO](https://github.com/JuanenRac/ARMOR-STUDIO) の*警報盤*メニューと*警報デザイナー*、[ARMOR-ANDROID-CONTROL](https://github.com/JuanenRac/ARMOR-ANDROID-CONTROL) アプリが操作します。Zigbee 無線は基板上でも、ネットワーク上のコーディネーターでも構いません。
+| 脅威 | 対策 |
+|---|---|
+| 平文またはコンパイル済みのパスワード | PBKDF2-HMAC-SHA256 10 000 ラウンド。ファームウェアにパスワードはなく（ユーザーのないノードはセットアップに入る）、ユーザーは最大 4 人（管理者または閲覧者）、8〜64 文字、セッションは最大 6、無操作 30 分 |
+| 書き込み直後のノードの乗っ取り | セットアップには起動コードが必要です。ビルドのもの（`CONFIG_ARMOR_SETUP_CODE`）か、フラッシュに保存して USB コンソールに表示するランダムなもの。フリートシークレットがあれば `HMAC-SHA256(シークレット, MAC)`。これはセットアップ用 Wi-Fi（WPA2、ブリッジなし）の鍵でもあります |
+| インターネットからのパネルへのアクセス | 初期設定では家庭のプライベートネットワーク（10/8、172.16/12、192.168/16、169.254/16、127/8、一部の VPN が使う 100.64/10）にだけ応答します。設定 `web.admin_sources` で他の IPv4 アドレスやネットワークを追加でき（8 件、120 文字）、それ以外は公開の `GET /api/v1/session` を除き拒否します。保存した本人を締め出すリストは拒否されます |
+| HTTP で平文のパネル | 443 番ポートで HTTPS。証明書はノード自身が作成（自己署名、フラッシュ保存、比較用に SHA-256 フィンガープリントを表示）。パネルは http、https、または両方を選べ、セッション Cookie は常に HttpOnly と SameSite=Strict（TLS では Secure も） |
+| GitHub からの偽ファームウェア | SHA-256 が一致し、メンテナーの鍵による有効な Ed25519 署名があるイメージだけをインストールします（`no_checksum`、`no_signature`、`bad_signature`、`checksum_mismatch`、`wrong_firmware`、`not_newer`、`version_mismatch` は拒否）。管理者の手動アップロードは検証されません（明示した制限） |
+| Bluetooth セットアップの乗っ取り | セットアップコードから導出した 6 桁の PIN を USB コンソールと管理者に表示し、設定を書き込む前にスマホで入力させます。セットアップの時間枠は `CONFIG_ARMOR_BLE_SETUP_MINUTES`（初期 10、1〜120） |
+| 基板を持つ人による保存済みシークレットの読み取り | 任意（初期はオフ、スイッチ `security.seal_secrets` またはサーバーの `nodes.nvs_encryption`）：パスワード、トークン、鍵、PIN、ハッシュを ChaCha20-Poly1305 で保護。フラッシュ全体の暗号化や eFuse の焼き込みはしません。鍵は同じチップの別パーティションにあるため、基板を手にした人には防御になりません |
+| ブローカーとの平文通信 | 任意の TLS（`mqtts://`）。所有者自身の認証局（PEM 2 KB まで）と名前の検証を使い、初期はオフです。ハンドシェイクはホストのテストでしか動いておらず、基板では未実行です |
+| パネルの PIN の推測 | 比較はどこが違うかを漏らしません。連続した失敗は `lockout_s`（既定 60 秒、1〜3600）の 1、5、15 倍で最初の 3 回ロックし、正しい PIN でも拒否します。ロック中の状態は再起動後も復元されます。アームに PIN は不要ですが、ディスアームとサイレンには必要です |
+| 家を無防備にする再起動 | モード、進行中のアラーム、除外したゾーンはフラッシュに保存して復元します。断線や短絡のループが除外されることはなく、ディスアーム中に作動した煙・パニック・改ざんは再起動後に戻ります。BOOT によるリセットはパネルがディスアームのときだけ消去します |
+| 読み取れないゾーンが閉じて見える | `trouble` を表示し（コンバーターが起動しない、または 5 周期読み取りなし）、強制しない限りパネルはその状態でアームしません。強制すると除外して記録します。鳴動中の煙・パニック検知器は除外されません |
+| 誰も許可していないサーバーからの命令 | サーバーからのアーム・ディスアーム・サイレンには 3 つのスイッチ（ノードの設定、ブローカーのアクセスリスト、サーバーの `ARMOR_ALARM_COMMANDS=1`）が必要で、サーバーはディスアームやサイレンの前にユーザーの PIN を求め、すべて初期はオフです。サイレンのリレーはアラームだけのもので、ブローカー、センター、パネルは動かせません |
+| 偽の Zigbee メッセージ | トピック `armor/alarm/<id>/zigbee` は、ノード・ゾーン・状態・電池・シーケンスに対するパネルの鍵（パネルに入力した 64 桁の 16 進数）による HMAC-SHA256 を運び、シーケンスは増えるだけです。ポリシーのトピックは `config_hash`、`zone_feed` とその署名を運び、それぞれノード側で固定できます |
 
-## 📂 リポジトリの構成
+これは認証を受けた警報システムではありません（[docs/SAFETY.md](docs/SAFETY.md)）。家庭用プロジェクトで、基板でも実際の設置でも動いたことがありません。サーバーがなければパネルが単独で判断し、ノードやその無線も止まれば誰も見張っていません。脆弱性の報告は [SECURITY.md](SECURITY.md) を参照してください。
 
-```text
-ARMOR-NODE-ALARM/
-├── core/    alarm_zone, alarm_panel (the rules), alarm_config, alarm_message, alarm_runner (the node), alarm_supervisor (what it keeps in flash and when it speaks), arm_profile (the arming profiles), plus the settings every node shares
-├── main/    the ESP-IDF firmware: alarm_manager, the web server, the Zigbee bridge, the relays
-├── panel/   the web panel (eight languages)
-├── tests/   test_alarm (the rules), test_profiles (the arming profiles), test_node (settings, messages, runner), test_mqtt_tls (the optional encrypted link to the broker), test_release (update from GitHub), emit_samples + check_samples (the messages against the contract), test_zigbee (ZNP, IAS Zone and WD, the node's own conversation with a coordinator)
-├── tools/   build_node.sh, check_sdkconfig.py, pack_panel.py, panel_mock.mjs (the stand-in node), panel_browser_test.mjs (the browser test of the panel), the shared CI checks (armor_ci_validate.py, armor_project_tool.py, _armor_readme_parity.py)
-├── secrets/ node.conf.example (the real files are git-ignored)
-├── CMakeLists.txt, partitions.csv, sdkconfig.defaults, sdkconfig.board.*   the ESP-IDF project, the flash layout and the settings of each board (s3-eth, s3-wifi)
-├── docs/    DESIGN, FAILOVER, SAFETY, NODE_FIRMWARE, ALARM_MESSAGES, HARDWARE, BASE_BOARD, ZIGBEE, BLE_PROVISIONING, BENCH_TESTS, SETUP_CODE
-└── images/  brand assets
-```
+## 🔌 インターフェース
 
-## 🛠️ 開発環境
+| 部分 | 設定内容 |
+|---|---|
+| MQTT | `armor/alarm/<id>/state`（保持なし：ID・名前・種類・状態・バイパスを持つゾーン、フェーズ）、`/command`、`/result`、`/zigbee`、`/policy`（サーバーからパネルへ）、`armor/device/<id>/<リレー>/{state,set}`、`armor/health/<id>`、`armor/control/<id>/...` |
+| ゾーン | 種類は `instant`、`entry`、`interior`、`always`、状態は `normal`、`triggered`、`tamper`、`trouble`。配線ループは最大 8（終端抵抗つき接点を ADC で読み 1 ピンで 4 状態。Ethernet 基板のアナログピンは有効な 6 本、Wi-Fi 基板は 8 本）、ボタン 4 個、100 件のイベントログ |
+| Zigbee | コーディネーターへのシリアルブリッジ（ZNP）、IAS Zone センサー、IAS WD サイレン。サーバーの Zigbee2MQTT が `zigbee_silence_min` の間沈黙するとノードが無線を引き継ぎ、サーバーが戻ると返します（[docs/ZIGBEE.md](docs/ZIGBEE.md)、[docs/FAILOVER.md](docs/FAILOVER.md)） |
 
-**必要なもの:** ホストテスト用の C++17 コンパイラ, イメージをビルドするための ESP-IDF 5.5.5 コンテナ, ESP32-S3 ボード（PoE イーサネットまたは Wi-Fi）
+## ⚙️ 設定
+
+| 変数 | 既定値 | 設定内容 |
+|---|---|---|
+| `panel.exit_delay_s`, `panel.entry_delay_s` | 30, 30 (0-600) | 退出と入場の遅延。退出する人は侵入者として扱われません |
+| `panel.lockout_s` | 60 (1-3600) | PIN のロック時間（最初の 3 回は 1、5、15 倍） |
+| `zigbee_silence_min` | - | サーバーの Zigbee が沈黙してよい時間（超えるとノードが無線を引き継ぐ） |
+| `CONFIG_ARMOR_NODE_ID`, `_SETUP_CODE`, `_FLEET_SECRET`, `_MQTT_*`, `_HEARTBEAT_S`, `_BLE_SETUP_MINUTES`, `_BOOT_FACTORY_RESET` | - | すべてのノードに共通する設定：名前（空なら `armor-` と MAC の下位バイト）、セットアップコード（空ならランダム）、フリートシークレット（16 文字以上、リポジトリには置かない）、最初のブローカー設定、ハートビート（2〜300 秒）、Bluetooth セットアップの分数（1〜120）、BOOT によるリセット（最初の 30 秒に 8 秒） |
+
+サイレン停止後の再鳴動は 3 回までです（`kMaxResounds`）。サイレンのリレーは再起動のたびに開いた状態で始まり、ブローカーを失っても開きません。
+
+## 🚀 クイックスタート
+
+**必要なもの:** ホストテスト用の C++17 コンパイラ、イメージのビルド用の ESP-IDF 5.5.5 コンテナ、ベース基板付きの ESP32-S3 基板（Ethernet または Wi-Fi）。
 
 ```bash
-cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir build/host   # 486,690 checks: the rules, the settings, the messages, the runner and the update from GitHub
+cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir build/host   # host tests, -Werror
+node tools/panel_mock.mjs --user admin:adminpass123   # the panel without a board
+tools/build_node.sh generic s3-wifi                  # the image in the ESP-IDF container (or s3-eth)
 ```
 
 [設計](docs/DESIGN.md)、[警報盤がサーバーから引き継ぐ方法](docs/FAILOVER.md)、[安全に関する注意](docs/SAFETY.md)を参照してください。
 
+## 🧪 テスト
+
+```bash
+cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir build/host
+python -I tools/armor_ci_validate.py
+```
+
+ホスト用テストプログラム 18 個と Python の検査 5 個を `ctest` で実行します。ホストのプログラムが数えた検査は 488930 件で、`-Werror` でビルドします。
+
+Python の検査：8 言語のパネル文言、タスク、保存パス、ロック下の Bluetooth セッション、パネルが呼ぶルート（ノードによっては HTTP コードやフォントのグリフも）
+
+ホストテストには任意の C++17 コンパイラ（Linux、WSL、MSYS2）が必要です。Web パネルは代役ノード（`tools/panel_mock.mjs`、`tools/panel_browser_test.mjs`）を相手に実際のブラウザでも検証します。
+
+検査の大半はパネルのルールの網羅的な総当たりで、ループ、サイレン、Zigbee 接続は代役です。
+
+## 🏗️ ビルドとリリース
+
+`tools/build_node.sh` が ESP-IDF 5.5.5 コンテナでイメージをビルドし、リリースにはイメージ、その SHA-256 と Ed25519 署名が基板ごとに付きます。イメージは初回のみ USB-C で書き込み、その後はパネルから更新します。
+
+## 🩺 トラブルシューティング
+
+| 症状 | 原因 | 対処 |
+|---|---|---|
+| パスワードを忘れた、またはノードがネットワークに参加しない | セットアップ中でアドレスがないノードは 90 秒後に独自の Wi-Fi `ARMOR-SETUP-xxxxxx` を開きます（`http://192.168.4.1/` を開く） | 最初からやり直すには、電源投入後 30 秒以内に BOOT を 8 秒押し続ける（設定とユーザーを消去）か、パネルの*工場出荷状態に戻す*を使います |
+| GitHub からの更新が拒否される | リリースにチェックサムや署名がない、一致しない（`e_no_checksum`、`e_no_signature`、`e_checksum_mismatch`、`e_bad_signature`）、この基板用のイメージがない（`e_no_asset_for_board`）、または別プロジェクトのもの（`e_wrong_firmware`） | ノードは変更されていません。再試行するか、管理者が手動でファイルをアップロード |
+| パネルがアームできない | ゾーンが `trouble`（コンバーターが起動しない、または 5 周期読み取りなし） | 配線を直すか、強制アームする（その場合ゾーンは除外され記録される） |
+| 正しい PIN でも拒否される | 失敗が続いてパネルがロック中（正しい PIN も拒否） | `lockout_s` だけ待つ（ロックは再起動後も続く） |
+| BOOT のリセットが効かない | パネルがアーム中：リセットはディスアーム中のパネルだけを消去する | 先に PIN でディスアームする |
+
+## 📂 リポジトリの構成
+
+<p align="center">
+  <img src="images/repository-structure.svg" alt="ARMOR-NODE-ALARM のリポジトリ構造" width="100%">
+</p>
+
+<details>
+<summary>ツリーのテキスト版</summary>
+
+```text
+ARMOR-NODE-ALARM/
+├── main/                                ファームウェア（ESP-IDF コンポーネント）
+├── core/                                ESP-IDF なしのロジック（コンピューターでテスト）
+├── panel/                               ファームウェアに埋め込まれた Web パネル
+├── tests/                               ホストテストと Python 検査
+├── docs/                                11 のガイド：安全、メッセージ、Zigbee、フェイルオーバー
+├── tools/                               ビルド・パッケージ・検査のツール
+├── .github/                             CI ワークフローと Issue・Pull Request のテンプレート
+├── images/                              バナー、アイコン、この README の 2 つの図
+├── build.sh build.bat                   共通のプロジェクトワークフローでビルド
+├── test.sh test.bat                     共通のワークフローでテストを実行
+├── run.sh run.bat                       共通のプロジェクトワークフローで起動
+├── armor.project.json                   マニフェスト：バージョン、役割、成熟度、ビルドコマンド
+├── CHANGELOG.md                         各バージョンの変更点
+├── SECURITY.md SUPPORT.md LICENSE       セキュリティポリシー、サポート、ライセンス
+├── CONTRIBUTING.md CODE_OF_CONDUCT.md   貢献方法と行動規範
+├── CMakeLists.txt                       ESP-IDF プロジェクト
+├── partitions.csv                       フラッシュのテーブル
+├── sdkconfig.defaults                   ファームウェアの設定
+├── sdkconfig.board.s3-eth               基板ごとの設定
+├── sdkconfig.board.s3-wifi              基板ごとの設定
+├── secrets/                             ノードファイルの例（本物はバージョン管理しません）
+├── build-test.sh build-test.bat         共通のワークフローでテストを実行
+└── .gitattributes .gitignore            Git の設定
+```
+
+</details>
+
+## 🗺️ ロードマップと既知の制限
+
+**現時点の既知の制限**
+
+* ノード自身のコーディネーター（ローカルまたはネットワーク上）との Zigbee のやり取りは、模擬のコーディネーターに対してのみテストしています。本物のコーディネーターやセンサーとはまだ接続していません。
+* Web パネルは実ブラウザーで模擬ノードに対して試しており、ボード上では試していません。
+* ボードは未製作で、ゾーンの配線もサイレンや Zigbee コーディネーターの接続もありません。実際の設備ではまだ何も動かしていません。
+* ロックアウト付きの PIN、設定コード、ログイン制限、署名付きアップデートはホストでテスト済みです。独立したレビューはなく、認証を受けた警報システムでもありません。
+* ハッシュと Ed25519 署名の確認、ロールバックの処理はホストで通ります。無線アップデートはボード上で一度も実行していません。
+* サイレンとリレーは警報の規則で駆動され、模擬に対してテストしています。本物のサイレンやリレーには接続していません。
+
+**今後**
+
+* 実際のループとサイレンを配線し、実際のコーディネーターとセンサーで Zigbee 接続を試し、実際の設置でパネルを動かしてから、それ以上のことを主張する。
+
+## 🌍 言語
+
+README とテキストは、英語、スペイン語、フランス語、イタリア語、ドイツ語、中国語、日本語、ヨーロッパポルトガル語で提供されています。
+
 ## 🔗 関連プロジェクト
 
-**A.R.M.O.R.**（Autonomous Radar & Multimodal Observation Range）は、独立したリポジトリで構成される周辺警備システムです。それぞれに独自のバージョン、テスト、README があります。ファミリーは次のとおりです：
+**A.R.M.O.R.**（Autonomous Radar & Multimodal Observation Range）は、独立したリポジトリで構成される境界セキュリティシステムです。各リポジトリは独自のバージョン、テスト、README を持ちます。ファミリーは次のとおりです：
 
-* **[ARMOR-COMMON](https://github.com/JuanenRac/ARMOR-COMMON)** - メッセージ契約、検証器、適合性ベクトル、生成された型
-* **[ARMOR-NODE-RADAR](https://github.com/JuanenRac/ARMOR-NODE-RADAR)** - ESP32-S3 用フィールドノードのファームウェア。レーダー 3 基と独自の Web パネル付き
-* **[ARMOR-NODE-SOLAR](https://github.com/JuanenRac/ARMOR-NODE-SOLAR)** - 太陽光インバーターとバッテリーのプロトコル、およびゲートウェイノードのメッセージ
-* **[ARMOR-NODE-ELECTRICAL](https://github.com/JuanenRac/ARMOR-NODE-ELECTRICAL)** - 電気ノード：電力量計、電力網の計測メッセージ、開閉のルール
-* **ARMOR-NODE-ALARM** (このリポジトリ) - 警報ノードと警報盤：警戒区域、警戒セット、遅延、サイレン、PIN。サーバーがあってもなくても
-* **[ARMOR-NODE-HMI](https://github.com/JuanenRac/ARMOR-NODE-HMI)** - タッチパネル：壁面ディスプレイでのシステム状態表示、警戒・確認操作、音声アシスタントの拠点
-* **[ARMOR-NETWORK](https://github.com/JuanenRac/ARMOR-NETWORK)** - ローカルネットワーク：機器、インターネット、そして変化
-* **[ARMOR-SERVER](https://github.com/JuanenRac/ARMOR-SERVER)** - 中央コーディネーター：テレメトリ、アラーム、デバイス、太陽光の測定値、カメラ
-* **[ARMOR-STUDIO](https://github.com/JuanenRac/ARMOR-STUDIO)** - Web コンソール：カメラ、レーダー、アラーム、太陽光発電、2D/3D サイト設計
-* **[ARMOR-ANDROID-CONTROL](https://github.com/JuanenRac/ARMOR-ANDROID-CONTROL)** - リアルタイム 2D/3D レーダー付きの Android オペレータークライアント
+* **[ARMOR-COMMON](https://github.com/JuanenRac/ARMOR-COMMON)** - メッセージのコントラクト、バリデーター、適合ベクトル、生成された型
+* **[ARMOR-NODE-RADAR](https://github.com/JuanenRac/ARMOR-NODE-RADAR)** - 3 つのレーダーと独自の Web パネルを備えた ESP32-S3 向けフィールドノードのファームウェア
+* **[ARMOR-NODE-SOLAR](https://github.com/JuanenRac/ARMOR-NODE-SOLAR)** - ソーラーインバーターとバッテリーのプロトコル、ゲートウェイノードのメッセージ
+* **[ARMOR-NODE-ELECTRICAL](https://github.com/JuanenRac/ARMOR-NODE-ELECTRICAL)** - 電気ノード：メーター、系統の読み取り値のメッセージ、切り替えのルール
+* **ARMOR-NODE-ALARM**（このリポジトリ） - 警報ノードとパネル：ゾーン、警戒、遅延、サイレン、PIN。サーバーありでもなしでも動作
+* **[ARMOR-NODE-HMI](https://github.com/JuanenRac/ARMOR-NODE-HMI)** - タッチパネル：壁面画面でのシステムの状態、警戒と確認応答、そして音声アシスタントの置き場
+* **[ARMOR-NETWORK](https://github.com/JuanenRac/ARMOR-NETWORK)** - ローカルネットワーク：そのデバイス、インターネット、そして変化
+* **[ARMOR-SERVER](https://github.com/JuanenRac/ARMOR-SERVER)** - 中央コーディネーター：テレメトリ、警報、デバイス、ソーラーの読み取り値、カメラ
+* **[ARMOR-STUDIO](https://github.com/JuanenRac/ARMOR-STUDIO)** - Web コンソール：カメラ、レーダー、警報、太陽光エネルギー、2D/3D のサイトデザイナー
+* **[ARMOR-ANDROID-CONTROL](https://github.com/JuanenRac/ARMOR-ANDROID-CONTROL)** - ライブの 2D/3D レーダーを備えた Android オペレータークライアント
 * **[ARMOR-IOS-CONTROL](https://github.com/JuanenRac/ARMOR-IOS-CONTROL)** - iPhone オペレータークライアント
-* **[ARMOR-SERVER-AI](https://github.com/JuanenRac/ARMOR-SERVER-AI)** - 判断を説明し、決して動作しない視覚推論ポリシー
-* **[ARMOR-VISION](https://github.com/JuanenRac/ARMOR-VISION)** - Jetson Orin NX 向けのカメラのゾーン、マスク、検知ルール
-* **[ARMOR-VOICE-AI](https://github.com/JuanenRac/ARMOR-VOICE-AI)** - 偽造できない確認を備えたオフライン音声インテント
-* **[ARMOR-HARDWARE](https://github.com/JuanenRac/ARMOR-HARDWARE)** - 筐体、電子部品、ベンチ受け入れマトリクス
+* **[ARMOR-SERVER-AI](https://github.com/JuanenRac/ARMOR-SERVER-AI)** - 判断を説明し、決して作動させない視覚推論ポリシー
+* **[ARMOR-VISION](https://github.com/JuanenRac/ARMOR-VISION)** - Jetson Orin NX 向けのカメラゾーン、マスク、検出ルール
+* **[ARMOR-VOICE-AI](https://github.com/JuanenRac/ARMOR-VOICE-AI)** - 偽造できない確認つきのオフライン音声インテント
+* **[ARMOR-HARDWARE](https://github.com/JuanenRac/ARMOR-HARDWARE)** - 筐体、電子回路、ベンチ受け入れマトリクス
 * **[ARMOR-DEVOPS](https://github.com/JuanenRac/ARMOR-DEVOPS)** - デプロイ、CM5 テストベンチ、バックアップ、TLS
-* **[ARMOR-SIMULATOR](https://github.com/JuanenRac/ARMOR-SIMULATOR)** - 再現可能な故障を備えたオフラインのテレメトリシミュレーター
-* **[ARMOR-UPDATER](https://github.com/JuanenRac/ARMOR-UPDATER)** - エコシステム自身のリポジトリを検出し、インストールし、更新する
-* **[ARMOR-DOCS](https://github.com/JuanenRac/ARMOR-DOCS)** - アーキテクチャ、セキュリティ基準、機能マトリクス
+* **[ARMOR-SIMULATOR](https://github.com/JuanenRac/ARMOR-SIMULATOR)** - 再現可能な障害を持つオフラインのテレメトリシミュレーター
+* **[ARMOR-UPDATER](https://github.com/JuanenRac/ARMOR-UPDATER)** - エコシステム自身のリポジトリを検出、インストール、更新
+* **[ARMOR-DOCS](https://github.com/JuanenRac/ARMOR-DOCS)** - アーキテクチャ、セキュリティのベースライン、機能マトリクス
 
-## 📚 ドキュメントとコミュニティ
+## 📚 ドキュメント
 
-詳しくは：
-
-* [機能マトリクス：実証済みのものとそうでないもの](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/CAPABILITY_MATRIX.md)
-* [プロジェクト一覧：バージョンとリポジトリ間の依存関係](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/PROJECT_CATALOG.md)
+* [安全](docs/SAFETY.md)：パネルが約束することとしないこと
+* [アラームメッセージ](docs/ALARM_MESSAGES.md)、[Zigbee](docs/ZIGBEE.md)、[フェイルオーバー](docs/FAILOVER.md)
+* [設計](docs/DESIGN.md)、[ハードウェア](docs/HARDWARE.md)、[ベース基板](docs/BASE_BOARD.md)、[ノードのファームウェア](docs/NODE_FIRMWARE.md)
+* [ベンチテスト](docs/BENCH_TESTS.md)、[セットアップコード](docs/SETUP_CODE.md)、[Bluetooth プロビジョニング](docs/BLE_PROVISIONING.md)
+* [機能マトリクス：何が証明され、何が証明されていないか](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/CAPABILITY_MATRIX.md)
+* [プロジェクトカタログ：バージョンと、リポジトリ同士の依存関係](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/PROJECT_CATALOG.md)
 * [このリポジトリの変更履歴](CHANGELOG.md)
-* [ライセンス（GPL-3.0-or-later）](LICENSE)
-* 質問・提案・報告：electrohobby3d@gmail.com
+
+## 🤝 コントリビュートとコミュニティ
+
+* Pull Request の前に `ctest --test-dir build/host` and `python -I tools/armor_ci_validate.py` を実行してください。通る必要があります。[CONTRIBUTING.md](CONTRIBUTING.md) と[行動規範](CODE_OF_CONDUCT.md)を参照してください。
+* README は 8 言語で提供され、ARMOR-DOCS のソースから生成されます。文面の変更はそちらで行います。
+* コンポーネント間のメッセージの変更は ARMOR-COMMON から始めます。
+* ビルドしただけのものを、ボード上で動いているかのように書かないでください。
+* 脆弱性は非公開で報告してください：[SECURITY.md](SECURITY.md)。質問、アイデア、報告：electrohobby3d@gmail.com（[SUPPORT.md](SUPPORT.md)）。
 
 ## 👤 作者
 
@@ -163,4 +304,4 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 
 ## 📜 ライセンス
 
-GPL-3.0-or-later - [LICENSE](LICENSE) を参照。
+GPL-3.0-or-later - [LICENSE](LICENSE) を参照してください。
