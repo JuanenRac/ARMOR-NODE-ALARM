@@ -23,7 +23,7 @@
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-482%2C535-2ea44f.svg" alt="Checks">
   <img src="https://img.shields.io/badge/Tests-488930%20checks-2ea44f.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/Version-0.4.8-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.4.9-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Reifegrad">
 </p>
 
@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Version | `0.4.8` |
+| Version | `0.4.9` |
 | Reifegrad | Funktionsfähig |
 | Rolle | Alarmzentralen-Feldknoten für ESP32-S3 (Familie: Field Nodes, übergeordnet: ARMOR-COMMON) |
 | Technik | C++17, ESP-IDF 5.5.5, ESP32-S3 |

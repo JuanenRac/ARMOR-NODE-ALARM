@@ -23,7 +23,7 @@
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-482%2C535-2ea44f.svg" alt="Checks">
   <img src="https://img.shields.io/badge/Tests-488930%20checks-2ea44f.svg" alt="Pruebas">
-  <img src="https://img.shields.io/badge/Version-0.4.8-0f6cbd.svg" alt="Versión">
+  <img src="https://img.shields.io/badge/Version-0.4.9-0f6cbd.svg" alt="Versión">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Madurez">
 </p>
 
@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Versión | `0.4.8` |
+| Versión | `0.4.9` |
 | Madurez | Funcional |
 | Función | Nodo de campo central de alarma para ESP32-S3 (familia: Field Nodes, padre: ARMOR-COMMON) |
 | Tecnología | C++17, ESP-IDF 5.5.5, ESP32-S3 |
