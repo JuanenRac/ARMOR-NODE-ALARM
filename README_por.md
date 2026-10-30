@@ -65,7 +65,7 @@ Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É 
 | Segurança | 🟡 | O PIN com bloqueio, o código de configuração, o limite de acessos e as atualizações assinadas estão testados no anfitrião; não houve revisão independente e este não é um sistema de alarme certificado. |
 | Atualizações | 🟠 | As verificações de hash e de assinatura Ed25519 e a lógica de retrocesso passam no anfitrião; uma atualização pelo ar nunca foi executada numa placa. |
 | Escrita nos equipamentos | 🟠 | A sirene e os relés são comandados pelas regras do alarme e testados contra simulações; nenhum foi ligado a uma sirene ou a um relé reais. |
-| Integração | 🟢 | As mensagens do nó são validadas contra os esquemas partilhados e os vetores de conformidade do ARMOR-COMMON. |
+| Integração | 🟠 | As mensagens do nó são validadas contra os esquemas partilhados e os vetores de conformidade do ARMOR-COMMON. O seu cliente MQTT é exercitado contra um Mosquitto real nos testes; nenhuma placa os enviou ainda a um servidor. |
 | Documentação | 🟢 | Oito idiomas, o guia do firmware, as notas de cablagem e o registo de alterações estão atualizados. |
 
 ## 🎯 Visão geral

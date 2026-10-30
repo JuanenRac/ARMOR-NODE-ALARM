@@ -65,7 +65,7 @@ Chaque ligne est une partie de ce dépôt et le feu dit où elle en est aujourd'
 | Sécurité | 🟡 | Le PIN avec verrouillage, le code de configuration, la limite de connexions et les mises à jour signées sont testés sur l'hôte ; il n'y a pas eu de revue indépendante et ce n'est pas un système d'alarme certifié. |
 | Mises à jour | 🟠 | Les contrôles de hash et de signature Ed25519 et la logique de retour arrière réussissent sur l'hôte ; une mise à jour par voie hertzienne n'a jamais été exécutée sur une carte. |
 | Écriture sur les équipements | 🟠 | La sirène et les relais sont pilotés par les règles de l'alarme et testés contre des simulations ; aucun n'a été relié à une vraie sirène ou à un vrai relais. |
-| Intégration | 🟢 | Les messages du nœud sont validés par rapport aux schémas partagés et aux vecteurs de conformité d'ARMOR-COMMON. |
+| Intégration | 🟠 | Les messages du nœud sont validés par rapport aux schémas partagés et aux vecteurs de conformité d'ARMOR-COMMON. Son client MQTT est joué contre un vrai Mosquitto dans les tests ; aucune carte ne les a encore envoyés à un serveur. |
 | Documentation | 🟢 | Huit langues, le guide du firmware, les notes de câblage et le journal des modifications sont à jour. |
 
 ## 🎯 Présentation
