@@ -155,6 +155,7 @@ ARMOR-NODE-ALARM 是报警主机：防区、布防、延时、警笛和 PIN 都�
 | `panel.lockout_s` | 60 (1-3600) | PIN 锁定时间，前三次分别乘以 1、5、15 |
 | `zigbee_silence_min` | - | 服务器的 Zigbee 可沉默多久，之后节点接管无线电 |
 | `CONFIG_ARMOR_NODE_ID`, `_SETUP_CODE`, `_FLEET_SECRET`, `_MQTT_*`, `_HEARTBEAT_S`, `_BLE_SETUP_MINUTES`, `_BOOT_FACTORY_RESET` | - | 所有节点共有的设置：名称（为空则为 `armor-` 加 MAC 的最后字节）、设置码（为空则随机）、机群密钥（16 个字符以上，绝不放入仓库）、最初的代理设置、心跳（2 到 300 秒）、蓝牙设置的分钟数（1 到 120）以及用 BOOT 重置（前 30 秒内按 8 秒） |
+| `system.login_limit_per_minute` | 30 (0-120) | 面板对所有人锁定登录前每分钟允许的错误密码次数（0 = 无全局限制）；可在 Studio（每个节点上的按钮）或通过 `POST /api/v1/admin/nodes/settings` 读取和修改，面板登录信息只使用一次，绝不保存 |
 
 静音后的再次鸣响限制为 3 次（`kMaxResounds`）。警笛继电器每次重启时处于断开状态，代理丢失时也不会自动断开。
 

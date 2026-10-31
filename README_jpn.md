@@ -155,6 +155,7 @@ ARMOR-NODE-ALARM は警報盤です。警戒区域、警戒、遅延、サイレ
 | `panel.lockout_s` | 60 (1-3600) | PIN のロック時間（最初の 3 回は 1、5、15 倍） |
 | `zigbee_silence_min` | - | サーバーの Zigbee が沈黙してよい時間（超えるとノードが無線を引き継ぐ） |
 | `CONFIG_ARMOR_NODE_ID`, `_SETUP_CODE`, `_FLEET_SECRET`, `_MQTT_*`, `_HEARTBEAT_S`, `_BLE_SETUP_MINUTES`, `_BOOT_FACTORY_RESET` | - | すべてのノードに共通する設定：名前（空なら `armor-` と MAC の下位バイト）、セットアップコード（空ならランダム）、フリートシークレット（16 文字以上、リポジトリには置かない）、最初のブローカー設定、ハートビート（2〜300 秒）、Bluetooth セットアップの分数（1〜120）、BOOT によるリセット（最初の 30 秒に 8 秒） |
+| `system.login_limit_per_minute` | 30 (0-120) | パネルが全員のログインをロックするまでの 1 分あたりの誤パスワード数（0 = 全体の上限なし）。Studio（各ノードのボタン）または `POST /api/v1/admin/nodes/settings` で読み取り・変更でき、パネルのログイン情報は 1 回だけ使われ保存されません |
 
 サイレン停止後の再鳴動は 3 回までです（`kMaxResounds`）。サイレンのリレーは再起動のたびに開いた状態で始まり、ブローカーを失っても開きません。
 

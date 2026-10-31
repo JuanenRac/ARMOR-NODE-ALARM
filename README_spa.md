@@ -155,6 +155,7 @@ No es un sistema de alarma certificado ([docs/SAFETY.md](docs/SAFETY.md)): es un
 | `panel.lockout_s` | 60 (1-3600) | El bloqueo del PIN, multiplicado por 1, 5 y 15 en los tres primeros |
 | `zigbee_silence_min` | - | Cuánto puede callar el Zigbee del servidor antes de que el nodo tome la radio |
 | `CONFIG_ARMOR_NODE_ID`, `_SETUP_CODE`, `_FLEET_SECRET`, `_MQTT_*`, `_HEARTBEAT_S`, `_BLE_SETUP_MINUTES`, `_BOOT_FACTORY_RESET` | - | Los ajustes que comparten todos los nodos: el nombre (vacío da `armor-` y los últimos bytes de la MAC), el código de puesta en marcha (vacío: aleatorio), el secreto de flota (16+ caracteres, nunca en el repositorio), los primeros ajustes del broker, el latido (de 2 a 300 s), los minutos de puesta en marcha por Bluetooth (de 1 a 120) y el reinicio con BOOT (8 s en los primeros 30 s) |
+| `system.login_limit_per_minute` | 30 (0-120) | Contraseñas erróneas por minuto antes de que el panel bloquee el acceso a todos (0 = sin límite global); se lee y se cambia desde Studio (un botón en cada nodo) o con `POST /api/v1/admin/nodes/settings`, donde el acceso al panel se usa una vez y nunca se guarda |
 
 Los resonidos tras un silencio se limitan a 3 (`kMaxResounds`). El relé de la sirena arranca abierto en cada reinicio y no cae a abierto si se pierde el broker.
 
