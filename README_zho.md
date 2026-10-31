@@ -23,7 +23,7 @@
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-482%2C535-2ea44f.svg" alt="Checks">
   <img src="https://img.shields.io/badge/Tests-488930%20checks-2ea44f.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/Version-0.4.9-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.5.0-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
 </p>
 
@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| 版本 | `0.4.9` |
+| 版本 | `0.5.0` |
 | 成熟度 | 可用 |
 | 角色 | ESP32-S3 报警面板现场节点（家族：Field Nodes，上级：ARMOR-COMMON） |
 | 技术栈 | C++17, ESP-IDF 5.5.5, ESP32-S3 |
