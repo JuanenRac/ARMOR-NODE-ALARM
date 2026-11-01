@@ -4,7 +4,7 @@
  * Copyright (C) 2026 JuanenRac (Electro Hobby 3D). GPL-3.0-or-later.
  *
  * The hardware-independent core under core/ (the zones, the loop, the panel's rules, the settings, the messages) is built and tested on a computer (tests/); the files beside this one are built
- * with ESP-IDF 5.4 (tools/build_node.sh does it in a container). None of it has run on a board yet, no zone has been wired and no siren connected. This is not a certified alarm system.
+ * with ESP-IDF 5.5.5 (tools/build_node.sh does it in a container). None of it has run on a board yet, no zone has been wired and no siren connected. This is not a certified alarm system.
  *
  * What a node is, in one paragraph: everything that differs from node to node (its identity, its Wi-Fi, its broker, its zones and its panel) is one settings
  * document in flash, edited from the node's own web panel, so the same firmware image serves every node and no password is compiled in. A node with no user yet is in
