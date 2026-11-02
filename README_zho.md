@@ -112,12 +112,31 @@ ARMOR-NODE-ALARM 是报警主机：防区、布防、延时、警笛和 PIN 都�
 
 ## 🖼️ 屏幕截图
 
-在测试台上以 1920×1080 截取，使用示例数据，背后没有真实的安装。
+在测试台上使用虚构的示例数据截取，背后没有真实的安装。
 
-<table>
-<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="概览：节点状态一目了然——网络、代理、固件及其上报内容。" width="100%"><br><sub>概览：节点状态一目了然——网络、代理、固件及其上报内容。</sub></td><td width="50%" valign="top"><img src="images/screenshots/zones.png" alt="防区：主机的每个有线或 Zigbee 防区，包括类型、保持时间和实时状态。" width="100%"><br><sub>防区：主机的每个有线或 Zigbee 防区，包括类型、保持时间和实时状态。</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/zigbee.png" alt="Zigbee 无线电：通往协调器模块的串口桥接、允许使用它的客户端以及桥接状态。" width="100%"><br><sub>Zigbee 无线电：通往协调器模块的串口桥接、允许使用它的客户端以及桥接状态。</sub></td><td width="50%" valign="top"><img src="images/screenshots/inputs-outputs.png" alt="继电器和警笛：底板的输出以及每个输出由什么驱动。" width="100%"><br><sub>继电器和警笛：底板的输出以及每个输出由什么驱动。</sub></td></tr>
-</table>
+<p align="center">
+  <img src="images/screenshots/overview.png" alt="概览" width="100%">
+</p>
+
+<p align="center"><em>概览：节点状态一目了然——网络、代理、固件及其上报内容。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zones.png" alt="防区" width="100%">
+</p>
+
+<p align="center"><em>防区：主机的每个有线或 Zigbee 防区，包括类型、保持时间和实时状态。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zigbee.png" alt="Zigbee 无线电" width="100%">
+</p>
+
+<p align="center"><em>Zigbee 无线电：通往协调器模块的串口桥接、允许使用它的客户端以及桥接状态。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/inputs-outputs.png" alt="继电器和警笛" width="100%">
+</p>
+
+<p align="center"><em>继电器和警笛：底板的输出以及每个输出由什么驱动。</em></p>
 
 ## 🔒 安全与防护
 

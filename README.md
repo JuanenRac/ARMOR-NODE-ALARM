@@ -112,12 +112,31 @@ ARMOR-NODE-ALARM is the alarm panel: the zones, the arming, the delays, the sire
 
 ## 🖼️ Screenshots
 
-Captured at 1920×1080 on a test bench, with sample data and no real installation behind them.
+Captured on a test bench with made-up sample data and no real installation behind them.
 
-<table>
-<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="Overview: the state of the node at a glance - network, broker, firmware and what it reports." width="100%"><br><sub>Overview: the state of the node at a glance - network, broker, firmware and what it reports.</sub></td><td width="50%" valign="top"><img src="images/screenshots/zones.png" alt="Zones: each wired or Zigbee zone of the panel, its kind, hold time and live state." width="100%"><br><sub>Zones: each wired or Zigbee zone of the panel, its kind, hold time and live state.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/zigbee.png" alt="Zigbee radio: the serial bridge to the coordinator module, which client may use it, and the state of the bridge." width="100%"><br><sub>Zigbee radio: the serial bridge to the coordinator module, which client may use it, and the state of the bridge.</sub></td><td width="50%" valign="top"><img src="images/screenshots/inputs-outputs.png" alt="Relays and siren: the outputs of the base board and what drives each one." width="100%"><br><sub>Relays and siren: the outputs of the base board and what drives each one.</sub></td></tr>
-</table>
+<p align="center">
+  <img src="images/screenshots/overview.png" alt="Overview" width="100%">
+</p>
+
+<p align="center"><em>Overview: the state of the node at a glance - network, broker, firmware and what it reports.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zones.png" alt="Zones" width="100%">
+</p>
+
+<p align="center"><em>Zones: each wired or Zigbee zone of the panel, its kind, hold time and live state.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zigbee.png" alt="Zigbee radio" width="100%">
+</p>
+
+<p align="center"><em>Zigbee radio: the serial bridge to the coordinator module, which client may use it, and the state of the bridge.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/inputs-outputs.png" alt="Relays and siren" width="100%">
+</p>
+
+<p align="center"><em>Relays and siren: the outputs of the base board and what drives each one.</em></p>
 
 ## 🔒 Security & Safety
 

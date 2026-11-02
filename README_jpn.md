@@ -112,12 +112,31 @@ ARMOR-NODE-ALARM は警報盤です。警戒区域、警戒、遅延、サイレ
 
 ## 🖼️ スクリーンショット
 
-テストベンチで 1920×1080 で撮影。サンプルデータを使用しており、実際の設備は接続されていません。
+テストベンチで架空のサンプルデータを使って撮影したもので、実際の設備は接続されていません。
 
-<table>
-<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="概要：ネットワーク、ブローカー、ファームウェア、報告内容など、ノードの状態をひと目で確認できます。" width="100%"><br><sub>概要：ネットワーク、ブローカー、ファームウェア、報告内容など、ノードの状態をひと目で確認できます。</sub></td><td width="50%" valign="top"><img src="images/screenshots/zones.png" alt="ゾーン：パネルの各有線・Zigbee ゾーンの種類、保持時間、リアルタイムの状態。" width="100%"><br><sub>ゾーン：パネルの各有線・Zigbee ゾーンの種類、保持時間、リアルタイムの状態。</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/zigbee.png" alt="Zigbee 無線：コーディネーターモジュールへのシリアルブリッジ、使用を許可するクライアント、ブリッジの状態。" width="100%"><br><sub>Zigbee 無線：コーディネーターモジュールへのシリアルブリッジ、使用を許可するクライアント、ブリッジの状態。</sub></td><td width="50%" valign="top"><img src="images/screenshots/inputs-outputs.png" alt="リレーとサイレン：ベースボードの出力と、それぞれを動かすもの。" width="100%"><br><sub>リレーとサイレン：ベースボードの出力と、それぞれを動かすもの。</sub></td></tr>
-</table>
+<p align="center">
+  <img src="images/screenshots/overview.png" alt="概要" width="100%">
+</p>
+
+<p align="center"><em>概要：ネットワーク、ブローカー、ファームウェア、報告内容など、ノードの状態をひと目で確認できます。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zones.png" alt="ゾーン" width="100%">
+</p>
+
+<p align="center"><em>ゾーン：パネルの各有線・Zigbee ゾーンの種類、保持時間、リアルタイムの状態。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zigbee.png" alt="Zigbee 無線" width="100%">
+</p>
+
+<p align="center"><em>Zigbee 無線：コーディネーターモジュールへのシリアルブリッジ、使用を許可するクライアント、ブリッジの状態。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/inputs-outputs.png" alt="リレーとサイレン" width="100%">
+</p>
+
+<p align="center"><em>リレーとサイレン：ベースボードの出力と、それぞれを動かすもの。</em></p>
 
 ## 🔒 セキュリティと安全
 

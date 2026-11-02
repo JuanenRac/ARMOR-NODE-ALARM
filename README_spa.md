@@ -112,12 +112,31 @@ ARMOR-NODE-ALARM es la central de alarma: las zonas, el armado, los retardos, la
 
 ## 🖼️ Capturas de pantalla
 
-Capturadas a 1920×1080 en un banco de pruebas, con datos de ejemplo y sin ninguna instalación real detrás.
+Capturadas en un banco de pruebas con datos de ejemplo inventados y sin ninguna instalación real detrás.
 
-<table>
-<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="Resumen: el estado del nodo de un vistazo - red, broker, firmware y lo que reporta." width="100%"><br><sub>Resumen: el estado del nodo de un vistazo - red, broker, firmware y lo que reporta.</sub></td><td width="50%" valign="top"><img src="images/screenshots/zones.png" alt="Zonas: cada zona cableada o Zigbee del panel, su tipo, tiempo de retención y estado en vivo." width="100%"><br><sub>Zonas: cada zona cableada o Zigbee del panel, su tipo, tiempo de retención y estado en vivo.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/zigbee.png" alt="Radio Zigbee: el puente serie hacia el módulo coordinador, qué cliente puede usarlo y el estado del puente." width="100%"><br><sub>Radio Zigbee: el puente serie hacia el módulo coordinador, qué cliente puede usarlo y el estado del puente.</sub></td><td width="50%" valign="top"><img src="images/screenshots/inputs-outputs.png" alt="Relés y sirena: las salidas de la placa base y qué acciona cada una." width="100%"><br><sub>Relés y sirena: las salidas de la placa base y qué acciona cada una.</sub></td></tr>
-</table>
+<p align="center">
+  <img src="images/screenshots/overview.png" alt="Resumen" width="100%">
+</p>
+
+<p align="center"><em>Resumen: el estado del nodo de un vistazo - red, broker, firmware y lo que reporta.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zones.png" alt="Zonas" width="100%">
+</p>
+
+<p align="center"><em>Zonas: cada zona cableada o Zigbee del panel, su tipo, tiempo de retención y estado en vivo.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zigbee.png" alt="Radio Zigbee" width="100%">
+</p>
+
+<p align="center"><em>Radio Zigbee: el puente serie hacia el módulo coordinador, qué cliente puede usarlo y el estado del puente.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/inputs-outputs.png" alt="Relés y sirena" width="100%">
+</p>
+
+<p align="center"><em>Relés y sirena: las salidas de la placa base y qué acciona cada una.</em></p>
 
 ## 🔒 Seguridad y protección
 

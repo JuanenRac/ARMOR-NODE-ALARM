@@ -112,12 +112,31 @@ ARMOR-NODE-ALARM è la centrale d'allarme: le zone, l'inserimento, i ritardi, la
 
 ## 🖼️ Schermate
 
-Catturate a 1920×1080 su un banco di prova, con dati di esempio e senza alcuna installazione reale dietro.
+Catturate su un banco di prova con dati di esempio inventati e senza alcuna installazione reale dietro.
 
-<table>
-<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="Riepilogo: lo stato del nodo in breve - rete, broker, firmware e ciò che riporta." width="100%"><br><sub>Riepilogo: lo stato del nodo in breve - rete, broker, firmware e ciò che riporta.</sub></td><td width="50%" valign="top"><img src="images/screenshots/zones.png" alt="Zone: ogni zona cablata o Zigbee della centrale, il tipo, il tempo di mantenimento e lo stato dal vivo." width="100%"><br><sub>Zone: ogni zona cablata o Zigbee della centrale, il tipo, il tempo di mantenimento e lo stato dal vivo.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/zigbee.png" alt="Radio Zigbee: il ponte seriale verso il modulo coordinatore, quale client può usarlo e lo stato del ponte." width="100%"><br><sub>Radio Zigbee: il ponte seriale verso il modulo coordinatore, quale client può usarlo e lo stato del ponte.</sub></td><td width="50%" valign="top"><img src="images/screenshots/inputs-outputs.png" alt="Relè e sirena: le uscite della scheda base e cosa comanda ciascuna." width="100%"><br><sub>Relè e sirena: le uscite della scheda base e cosa comanda ciascuna.</sub></td></tr>
-</table>
+<p align="center">
+  <img src="images/screenshots/overview.png" alt="Riepilogo" width="100%">
+</p>
+
+<p align="center"><em>Riepilogo: lo stato del nodo in breve - rete, broker, firmware e ciò che riporta.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zones.png" alt="Zone" width="100%">
+</p>
+
+<p align="center"><em>Zone: ogni zona cablata o Zigbee della centrale, il tipo, il tempo di mantenimento e lo stato dal vivo.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zigbee.png" alt="Radio Zigbee" width="100%">
+</p>
+
+<p align="center"><em>Radio Zigbee: il ponte seriale verso il modulo coordinatore, quale client può usarlo e lo stato del ponte.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/inputs-outputs.png" alt="Relè e sirena" width="100%">
+</p>
+
+<p align="center"><em>Relè e sirena: le uscite della scheda base e cosa comanda ciascuna.</em></p>
 
 ## 🔒 Sicurezza e protezione
 

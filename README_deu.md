@@ -112,12 +112,31 @@ ARMOR-NODE-ALARM ist die Alarmzentrale: Zonen, Scharfschalten, Verzögerungen, S
 
 ## 🖼️ Screenshots
 
-Aufgenommen mit 1920×1080 auf einem Prüfstand, mit Beispieldaten und ohne eine echte Anlage dahinter.
+Aufgenommen auf einem Prüfstand mit erfundenen Beispieldaten und ohne eine echte Anlage dahinter.
 
-<table>
-<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="Übersicht: der Zustand des Knotens auf einen Blick - Netzwerk, Broker, Firmware und was er meldet." width="100%"><br><sub>Übersicht: der Zustand des Knotens auf einen Blick - Netzwerk, Broker, Firmware und was er meldet.</sub></td><td width="50%" valign="top"><img src="images/screenshots/zones.png" alt="Zonen: jede verdrahtete oder Zigbee-Zone der Zentrale, ihre Art, Haltezeit und der Live-Zustand." width="100%"><br><sub>Zonen: jede verdrahtete oder Zigbee-Zone der Zentrale, ihre Art, Haltezeit und der Live-Zustand.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/zigbee.png" alt="Zigbee-Funk: die serielle Brücke zum Koordinatormodul, welcher Client sie nutzen darf, und der Zustand der Brücke." width="100%"><br><sub>Zigbee-Funk: die serielle Brücke zum Koordinatormodul, welcher Client sie nutzen darf, und der Zustand der Brücke.</sub></td><td width="50%" valign="top"><img src="images/screenshots/inputs-outputs.png" alt="Relais und Sirene: die Ausgänge der Basisplatine und was jeden ansteuert." width="100%"><br><sub>Relais und Sirene: die Ausgänge der Basisplatine und was jeden ansteuert.</sub></td></tr>
-</table>
+<p align="center">
+  <img src="images/screenshots/overview.png" alt="Übersicht" width="100%">
+</p>
+
+<p align="center"><em>Übersicht: der Zustand des Knotens auf einen Blick - Netzwerk, Broker, Firmware und was er meldet.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zones.png" alt="Zonen" width="100%">
+</p>
+
+<p align="center"><em>Zonen: jede verdrahtete oder Zigbee-Zone der Zentrale, ihre Art, Haltezeit und der Live-Zustand.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zigbee.png" alt="Zigbee-Funk" width="100%">
+</p>
+
+<p align="center"><em>Zigbee-Funk: die serielle Brücke zum Koordinatormodul, welcher Client sie nutzen darf, und der Zustand der Brücke.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/inputs-outputs.png" alt="Relais und Sirene" width="100%">
+</p>
+
+<p align="center"><em>Relais und Sirene: die Ausgänge der Basisplatine und was jeden ansteuert.</em></p>
 
 ## 🔒 Sicherheit und Schutz
 

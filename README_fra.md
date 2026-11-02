@@ -112,12 +112,31 @@ ARMOR-NODE-ALARM est la centrale d'alarme : les zones, l'armement, les temporisa
 
 ## 🖼️ Captures d'écran
 
-Capturées en 1920×1080 sur un banc d'essai, avec des données d'exemple et sans installation réelle derrière.
+Capturées sur un banc d'essai avec des données d'exemple fictives et sans installation réelle derrière.
 
-<table>
-<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="Résumé : l'état du nœud en un coup d'œil - réseau, broker, firmware et ce qu'il remonte." width="100%"><br><sub>Résumé : l'état du nœud en un coup d'œil - réseau, broker, firmware et ce qu'il remonte.</sub></td><td width="50%" valign="top"><img src="images/screenshots/zones.png" alt="Zones : chaque zone filaire ou Zigbee de la centrale, son type, sa durée de maintien et son état en direct." width="100%"><br><sub>Zones : chaque zone filaire ou Zigbee de la centrale, son type, sa durée de maintien et son état en direct.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/zigbee.png" alt="Radio Zigbee : le pont série vers le module coordinateur, quel client peut l'utiliser et l'état du pont." width="100%"><br><sub>Radio Zigbee : le pont série vers le module coordinateur, quel client peut l'utiliser et l'état du pont.</sub></td><td width="50%" valign="top"><img src="images/screenshots/inputs-outputs.png" alt="Relais et sirène : les sorties de la carte de base et ce qui pilote chacune." width="100%"><br><sub>Relais et sirène : les sorties de la carte de base et ce qui pilote chacune.</sub></td></tr>
-</table>
+<p align="center">
+  <img src="images/screenshots/overview.png" alt="Résumé" width="100%">
+</p>
+
+<p align="center"><em>Résumé : l'état du nœud en un coup d'œil - réseau, broker, firmware et ce qu'il remonte.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zones.png" alt="Zones" width="100%">
+</p>
+
+<p align="center"><em>Zones : chaque zone filaire ou Zigbee de la centrale, son type, sa durée de maintien et son état en direct.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/zigbee.png" alt="Radio Zigbee" width="100%">
+</p>
+
+<p align="center"><em>Radio Zigbee : le pont série vers le module coordinateur, quel client peut l'utiliser et l'état du pont.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/inputs-outputs.png" alt="Relais et sirène" width="100%">
+</p>
+
+<p align="center"><em>Relais et sirène : les sorties de la carte de base et ce qui pilote chacune.</em></p>
 
 ## 🔒 Sécurité et protection
 

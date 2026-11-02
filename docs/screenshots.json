@@ -1,0 +1,96 @@
+{
+  "screens": [
+    {
+      "file": "overview.png",
+      "alt": {
+        "en": "Overview",
+        "es": "Resumen",
+        "fr": "Résumé",
+        "it": "Riepilogo",
+        "de": "Übersicht",
+        "zh": "概览",
+        "ja": "概要",
+        "pt": "Resumo"
+      },
+      "caption": {
+        "en": "Overview: the state of the node at a glance - network, broker, firmware and what it reports.",
+        "es": "Resumen: el estado del nodo de un vistazo - red, broker, firmware y lo que reporta.",
+        "fr": "Résumé : l'état du nœud en un coup d'œil - réseau, broker, firmware et ce qu'il remonte.",
+        "it": "Riepilogo: lo stato del nodo in breve - rete, broker, firmware e ciò che riporta.",
+        "de": "Übersicht: der Zustand des Knotens auf einen Blick - Netzwerk, Broker, Firmware und was er meldet.",
+        "zh": "概览：节点状态一目了然——网络、代理、固件及其上报内容。",
+        "ja": "概要：ネットワーク、ブローカー、ファームウェア、報告内容など、ノードの状態をひと目で確認できます。",
+        "pt": "Resumo: o estado do nó num relance - rede, broker, firmware e o que reporta."
+      }
+    },
+    {
+      "file": "zones.png",
+      "alt": {
+        "en": "Zones",
+        "es": "Zonas",
+        "fr": "Zones",
+        "it": "Zone",
+        "de": "Zonen",
+        "zh": "防区",
+        "ja": "ゾーン",
+        "pt": "Zonas"
+      },
+      "caption": {
+        "en": "Zones: each wired or Zigbee zone of the panel, its kind, hold time and live state.",
+        "es": "Zonas: cada zona cableada o Zigbee del panel, su tipo, tiempo de retención y estado en vivo.",
+        "fr": "Zones : chaque zone filaire ou Zigbee de la centrale, son type, sa durée de maintien et son état en direct.",
+        "it": "Zone: ogni zona cablata o Zigbee della centrale, il tipo, il tempo di mantenimento e lo stato dal vivo.",
+        "de": "Zonen: jede verdrahtete oder Zigbee-Zone der Zentrale, ihre Art, Haltezeit und der Live-Zustand.",
+        "zh": "防区：主机的每个有线或 Zigbee 防区，包括类型、保持时间和实时状态。",
+        "ja": "ゾーン：パネルの各有線・Zigbee ゾーンの種類、保持時間、リアルタイムの状態。",
+        "pt": "Zonas: cada zona com fios ou Zigbee do painel, o seu tipo, o tempo de retenção e o estado em direto."
+      }
+    },
+    {
+      "file": "zigbee.png",
+      "alt": {
+        "en": "Zigbee radio",
+        "es": "Radio Zigbee",
+        "fr": "Radio Zigbee",
+        "it": "Radio Zigbee",
+        "de": "Zigbee-Funk",
+        "zh": "Zigbee 无线电",
+        "ja": "Zigbee 無線",
+        "pt": "Rádio Zigbee"
+      },
+      "caption": {
+        "en": "Zigbee radio: the serial bridge to the coordinator module, which client may use it, and the state of the bridge.",
+        "es": "Radio Zigbee: el puente serie hacia el módulo coordinador, qué cliente puede usarlo y el estado del puente.",
+        "fr": "Radio Zigbee : le pont série vers le module coordinateur, quel client peut l'utiliser et l'état du pont.",
+        "it": "Radio Zigbee: il ponte seriale verso il modulo coordinatore, quale client può usarlo e lo stato del ponte.",
+        "de": "Zigbee-Funk: die serielle Brücke zum Koordinatormodul, welcher Client sie nutzen darf, und der Zustand der Brücke.",
+        "zh": "Zigbee 无线电：通往协调器模块的串口桥接、允许使用它的客户端以及桥接状态。",
+        "ja": "Zigbee 無線：コーディネーターモジュールへのシリアルブリッジ、使用を許可するクライアント、ブリッジの状態。",
+        "pt": "Rádio Zigbee: a ponte série para o módulo coordenador, que cliente a pode usar e o estado da ponte."
+      }
+    },
+    {
+      "file": "inputs-outputs.png",
+      "alt": {
+        "en": "Relays and siren",
+        "es": "Relés y sirena",
+        "fr": "Relais et sirène",
+        "it": "Relè e sirena",
+        "de": "Relais und Sirene",
+        "zh": "继电器和警笛",
+        "ja": "リレーとサイレン",
+        "pt": "Relés e sirene"
+      },
+      "caption": {
+        "en": "Relays and siren: the outputs of the base board and what drives each one.",
+        "es": "Relés y sirena: las salidas de la placa base y qué acciona cada una.",
+        "fr": "Relais et sirène : les sorties de la carte de base et ce qui pilote chacune.",
+        "it": "Relè e sirena: le uscite della scheda base e cosa comanda ciascuna.",
+        "de": "Relais und Sirene: die Ausgänge der Basisplatine und was jeden ansteuert.",
+        "zh": "继电器和警笛：底板的输出以及每个输出由什么驱动。",
+        "ja": "リレーとサイレン：ベースボードの出力と、それぞれを動かすもの。",
+        "pt": "Relés e sirene: as saídas da placa base e o que aciona cada uma."
+      }
+    }
+  ]
+}
