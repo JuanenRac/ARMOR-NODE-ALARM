@@ -202,6 +202,8 @@ void alarm_task(void*) {
   unit_config.unit_id = ADC_UNIT_1;
   std::array<adc_cali_handle_t, config::kZoneCount> calibration{};
   std::array<bool, config::kZoneCount> ready{};
+  adc_cali_handle_t siren_calibration = nullptr;   // the return line of the siren (core/siren_loop.hpp), read by the same converter
+  bool siren_ready = false;
   const bool any_zone = g_wiring.needs_converter;   // a Zigbee zone has no pin, a digital one is not read by the converter
   // the digital pins: inputs with the internal pull-up (a closed contact pulls the pin to ground)
   const auto input_with_pullup = [](int pin, const char* what) {
@@ -235,6 +237,16 @@ void alarm_task(void*) {
         if (adc_oneshot_config_channel(unit, channel, &channel_config) == ESP_OK && adc_cali_create_scheme_curve_fitting(&cali, &calibration[i]) == ESP_OK) ready[i] = true;
         else { ESP_LOGE(kTag, "GPIO %d could not be set up as a zone's input", zone.pin); std::lock_guard<std::mutex> guard(g_lock); g_error = "adc"; }
       }
+      if (g_wiring.siren_loop) {
+        const adc_channel_t channel = static_cast<adc_channel_t>(board::adc1_channel(g_settings.siren_loop.pin));
+        adc_oneshot_chan_cfg_t channel_config{};
+        channel_config.atten = ADC_ATTEN_DB_12;
+        channel_config.bitwidth = ADC_BITWIDTH_DEFAULT;
+        adc_cali_curve_fitting_config_t cali{};
+        cali.unit_id = ADC_UNIT_1; cali.chan = channel; cali.atten = ADC_ATTEN_DB_12; cali.bitwidth = ADC_BITWIDTH_DEFAULT;
+        if (adc_oneshot_config_channel(unit, channel, &channel_config) == ESP_OK && adc_cali_create_scheme_curve_fitting(&cali, &siren_calibration) == ESP_OK) siren_ready = true;
+        else { ESP_LOGE(kTag, "GPIO %d could not be set up as the return line of the siren", g_settings.siren_loop.pin); std::lock_guard<std::mutex> guard(g_lock); g_error = "adc"; }
+      }
     }
   }
   // A task that stops turning (a lock that is never given back, a driver that hangs) must not leave the house unguarded for ever: the watchdog restarts the board, and the saved state
@@ -256,6 +268,8 @@ void alarm_task(void*) {
     const std::uint64_t now = now_ms();
     std::array<double, config::kZoneCount> millivolts{};
     std::array<bool, config::kZoneCount> read{};
+    double siren_mv = 0;
+    bool siren_read = false;
     if (unit != nullptr) {
       std::lock_guard<std::mutex> adc_guard(armor::adc_lock());   // nobody else touches the converter while the zones are read (see entropy.cpp)
       for (std::size_t i = 0; i < config::kZoneCount; ++i) {
@@ -269,6 +283,16 @@ void alarm_task(void*) {
         }
         if (taken > 0) { millivolts[i] = static_cast<double>(sum) / taken; read[i] = true; }
       }
+      if (g_wiring.siren_loop && siren_ready) {
+        const adc_channel_t channel = static_cast<adc_channel_t>(board::adc1_channel(g_settings.siren_loop.pin));
+        long sum = 0;
+        int taken = 0;
+        for (int k = 0; k < kSamples; ++k) {
+          int raw = 0, mv = 0;
+          if (adc_oneshot_read(unit, channel, &raw) == ESP_OK && adc_cali_raw_to_voltage(siren_calibration, raw, &mv) == ESP_OK) { sum += mv; ++taken; }
+        }
+        if (taken > 0) { siren_mv = static_cast<double>(sum) / taken; siren_read = true; }
+      }
     }
     alarm::Writes writes;
     {
@@ -277,6 +301,10 @@ void alarm_task(void*) {
     for (std::size_t i = 0; i < config::kZoneCount; ++i) {
       if (read[i]) g_sup->runner().feed(i, millivolts[i], now);
       else if (g_wiring.zones[i] == alarm::ZoneInput::kAnalogLoop) g_sup->runner().feed_unreadable(i, now);   // a loop nobody can read is not a closed one
+    }
+    if (g_wiring.siren_loop) {   // the siren's wiring: a return line nobody can read is not a siren that is there
+      if (siren_read) g_sup->runner().feed_siren_loop(siren_mv, now);
+      else g_sup->runner().feed_siren_loop_unreadable(now);
     }
     for (std::size_t i = 0; i < config::kZoneCount; ++i) if (digital_ready[i]) g_sup->runner().feed_digital(i, gpio_get_level(static_cast<gpio_num_t>(g_settings.zones[i].pin)) != 0, now);
     bool pressed = false;

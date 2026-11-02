@@ -21,15 +21,15 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Language-C%2B%2B17-00599c.svg" alt="Language">
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
-  <img src="https://img.shields.io/badge/Checks-482%2C535-2ea44f.svg" alt="Checks">
-  <img src="https://img.shields.io/badge/Tests-488930%20checks-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
+  <img src="https://img.shields.io/badge/Tests-489145%20checks-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.5.1-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
 </p>
 
 ---
 
-**Honesty check - what runs today:** What exists is the **core of the alarm** (what a zone is, how a wired loop read by the ADC becomes a state, the panel's rules: arming, delays, the alarm, the siren, the PIN with lockout) and the **firmware of the node** built on it (settings, web panel, messages with the server, the Zigbee radio's bridge, a Zigbee coordinator on the network, relays, Bluetooth, signed updates), which builds for both boards; the core, the settings, the messages and the panel in a real browser against a stand-in node are tested on a computer with 488,930 checks in 18 test programs. **Nothing has run on a board or on a real installation, no zone has been wired and no siren connected, the node's own Zigbee conversation with a coordinator (local or on the network) is written and tested against a stand-in coordinator but has never run against a real coordinator or a real sensor, and this is not a certified alarm system.**
+**Honesty check - what runs today:** What exists is the **core of the alarm** (what a zone is, how a wired loop read by the ADC becomes a state, the panel's rules: arming, delays, the alarm, the siren, the PIN with lockout) and the **firmware of the node** built on it (settings, web panel, messages with the server, the Zigbee radio's bridge, a Zigbee coordinator on the network, relays, Bluetooth, signed updates), which builds for both boards; the core, the settings, the messages and the panel in a real browser against a stand-in node are tested on a computer with 489,145 checks in 21 test programs. **Nothing has run on a board or on a real installation, no zone has been wired and no siren connected, the node's own Zigbee conversation with a coordinator (local or on the network) is written and tested against a stand-in coordinator but has never run against a real coordinator or a real sensor, and this is not a certified alarm system.**
 
 ---
 
@@ -41,7 +41,7 @@
 | Maturity | Functional |
 | Role | Alarm panel field node for ESP32-S3 (family: Field Nodes, parent: ARMOR-COMMON) |
 | Stack | C++17, ESP-IDF 5.5.5, ESP32-S3 |
-| Tests | 488930 checks in 18 host programs and 5 Python checks (`ctest`) |
+| Tests | 489145 checks in 21 host programs and 5 Python checks (`ctest`) |
 | Inputs | Up to 8 wired loops, Zigbee sensors (IAS Zone) and siren (IAS WD), 4 buttons |
 | Runs on | An ESP32-S3 board (Ethernet or Wi-Fi) with the base board; host tests on any computer |
 | On real hardware | None yet: no board, zone, siren or Zigbee coordinator connected (host tests, the build and the panel in a browser only) |
@@ -58,7 +58,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟢 | The firmware builds in the ESP-IDF 5.5.5 container for both boards (Wi-Fi and Ethernet). |
-| Tests | 🟢 | 488,930 checks in 18 host programs pass (`ctest`): the zones, the wired loops read by the ADC, the arming, delays, siren and PIN rules, the settings and the messages. |
+| Tests | 🟢 | 489,145 checks in 21 host programs pass (`ctest`): the zones, the wired loops read by the ADC, the arming, delays, siren and PIN rules, the settings and the messages. |
 | Protocols and data | 🟠 | The node's own Zigbee conversation with a coordinator, local or on the network, is tested only against a stand-in coordinator; it has never met a real coordinator or sensor. |
 | Interface | 🟡 | The web panel is exercised in a real browser against a stand-in node, not on a board. |
 | Hardware | 🔴 | No board built, no zone wired and no siren or Zigbee coordinator connected: nothing has run on a real installation. |
@@ -156,6 +156,11 @@ This is not a certified alarm system ([docs/SAFETY.md](docs/SAFETY.md)): it is a
 | `zigbee_silence_min` | - | How long the server's Zigbee may be silent before the node takes the radio |
 | `CONFIG_ARMOR_NODE_ID`, `_SETUP_CODE`, `_FLEET_SECRET`, `_MQTT_*`, `_HEARTBEAT_S`, `_BLE_SETUP_MINUTES`, `_BOOT_FACTORY_RESET` | - | The settings every node shares: the name (empty gives `armor-` and the last bytes of the MAC), the set-up code (empty: random), the fleet secret (16+ characters, never in the repository), the first broker settings, the heartbeat (2 to 300 s), the minutes of Bluetooth set-up (1 to 120) and the reset with BOOT (8 s in the first 30 s) |
 | `system.login_limit_per_minute` | 30 (0-120) | Wrong passwords per minute before the panel locks sign-in for everyone (0 = no global limit); read and change it from Studio (a button on every node) or with `POST /api/v1/admin/nodes/settings`, where the panel login is used once and never kept |
+| `security.ota_check_board` | on | Refuse an uploaded firmware that was built for the other board (Wi-Fi or Ethernet); the image carries a mark of its board that the node reads while it arrives |
+| `security.ota_require_board_mark` | on | Also refuse an image that carries no board mark (an older firmware); turn it off to go back to a version made before the marks |
+| `siren_loop.enabled` | off | Supervise the siren's wiring: an analog pin reads the siren's return line and the state message carries `siren_loop` and `siren_fault` (cut, shorted or unreadable); no board has the return input yet |
+| `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | The return pin, the millivolts below which the wire is shorted and up to which the siren is there (above it the wire is cut), the time a reading must hold to report or lift a fault (100-60000 ms) and whether the line is also read while the siren sounds |
+| `siren_loop.block_arming` | off | Refuse to arm without `force` while the siren's wiring is in fault (as with an open zone); the fault is reported either way |
 
 Re-sounds after a silence are limited to 3 (`kMaxResounds`). The siren relay starts open on every restart and does not fall open when the broker is lost.
 
@@ -178,7 +183,7 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 python -I tools/armor_ci_validate.py
 ```
 
-18 host test programs and 5 Python checks run under `ctest`; 488930 checks counted by the host programs, built with `-Werror`.
+21 host test programs and 5 Python checks run under `ctest`; 489145 checks counted by the host programs, built with `-Werror`.
 
 Python checks: the panel texts in eight languages, the tasks, the save paths, the Bluetooth session under its lock and the routes the panel calls (and, in some nodes, the HTTP codes or the glyphs of the fonts)
 

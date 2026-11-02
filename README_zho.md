@@ -21,15 +21,15 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Language-C%2B%2B17-00599c.svg" alt="Language">
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
-  <img src="https://img.shields.io/badge/Checks-482%2C535-2ea44f.svg" alt="Checks">
-  <img src="https://img.shields.io/badge/Tests-488930%20checks-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
+  <img src="https://img.shields.io/badge/Tests-489145%20checks-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.5.1-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
 </p>
 
 ---
 
-**诚实性检查 - 今天真正能运行的部分：** 目前存在的是**报警核心**（什么是防区、ADC 读取的有线回路如何变成状态、主机的规则：布防、延时、报警、警笛、带锁定的 PIN）以及建立在其上的**节点固件**（设置、网页面板、与服务器的消息、Zigbee 无线电的桥接、网络上的 Zigbee 协调器、继电器、蓝牙、签名更新），可为两种板子构建；核心、设置、消息以及在真实浏览器中对照替身节点的面板，在计算机上用 18 个测试程序中的 488,930 项检查进行测试。**没有任何东西在板上或真实安装中运行过，没有接过任何防区，也没有连接过警笛；节点自己与协调器（本地或网络上）的 Zigbee 对话已编写并对照替身协调器测试，但从未对照真实的协调器或传感器运行，而且这不是经过认证的报警系统。**
+**诚实性检查 - 今天真正能运行的部分：** 目前存在的是**报警核心**（什么是防区、ADC 读取的有线回路如何变成状态、主机的规则：布防、延时、报警、警笛、带锁定的 PIN）以及建立在其上的**节点固件**（设置、网页面板、与服务器的消息、Zigbee 无线电的桥接、网络上的 Zigbee 协调器、继电器、蓝牙、签名更新），可为两种板子构建；核心、设置、消息以及在真实浏览器中对照替身节点的面板，在计算机上用 21 个测试程序中的 489,145 项检查进行测试。**没有任何东西在板上或真实安装中运行过，没有接过任何防区，也没有连接过警笛；节点自己与协调器（本地或网络上）的 Zigbee 对话已编写并对照替身协调器测试，但从未对照真实的协调器或传感器运行，而且这不是经过认证的报警系统。**
 
 ---
 
@@ -41,7 +41,7 @@
 | 成熟度 | 可用 |
 | 角色 | ESP32-S3 报警面板现场节点（家族：Field Nodes，上级：ARMOR-COMMON） |
 | 技术栈 | C++17, ESP-IDF 5.5.5, ESP32-S3 |
-| 测试 | 488930 项检查（18 个主机程序和 5 项 Python 检查，`ctest`） |
+| 测试 | 489145 项检查（21 个主机程序和 5 项 Python 检查，`ctest`） |
 | 输入 | 最多 8 个有线回路、Zigbee 传感器（IAS Zone）和警笛（IAS WD）、4 个按钮 |
 | 运行位置 | 带底板的 ESP32-S3 电路板（以太网或 Wi-Fi）；主机测试可在任何计算机上运行 |
 | 真实硬件 | 暂无：没有连接板子、防区、警笛或 Zigbee 协调器（仅有计算机测试、构建和浏览器中的面板） |
@@ -58,7 +58,7 @@
 | 领域 | 状态 | 在这里的含义 |
 |---|---|---|
 | 软件 | 🟢 | 固件可在 ESP-IDF 5.5.5 容器中为两块板（Wi-Fi 和以太网）构建。 |
-| 测试 | 🟢 | 18 个主机程序中的 488,930 项检查通过（`ctest`）：防区、由 ADC 读取的有线回路、布防、延时、警笛和 PIN 规则、设置和消息。 |
+| 测试 | 🟢 | 21 个主机程序中的 489,145 项检查通过（`ctest`）：防区、由 ADC 读取的有线回路、布防、延时、警笛和 PIN 规则、设置和消息。 |
 | 协议与数据 | 🟠 | 节点自身与协调器（本地或网络上）的 Zigbee 通信只对照模拟协调器测试过；从未遇到过真实的协调器或传感器。 |
 | 界面 | 🟡 | 网页面板已在真实浏览器中对模拟节点测试过，尚未在板子上测试。 |
 | 硬件 | 🔴 | 尚未制作板子，没有接线的防区，也没有连接警笛或 Zigbee 协调器：还没有在真实的安装中运行过。 |
@@ -156,6 +156,11 @@ ARMOR-NODE-ALARM 是报警主机：防区、布防、延时、警笛和 PIN 都�
 | `zigbee_silence_min` | - | 服务器的 Zigbee 可沉默多久，之后节点接管无线电 |
 | `CONFIG_ARMOR_NODE_ID`, `_SETUP_CODE`, `_FLEET_SECRET`, `_MQTT_*`, `_HEARTBEAT_S`, `_BLE_SETUP_MINUTES`, `_BOOT_FACTORY_RESET` | - | 所有节点共有的设置：名称（为空则为 `armor-` 加 MAC 的最后字节）、设置码（为空则随机）、机群密钥（16 个字符以上，绝不放入仓库）、最初的代理设置、心跳（2 到 300 秒）、蓝牙设置的分钟数（1 到 120）以及用 BOOT 重置（前 30 秒内按 8 秒） |
 | `system.login_limit_per_minute` | 30 (0-120) | 面板对所有人锁定登录前每分钟允许的错误密码次数（0 = 无全局限制）；可在 Studio（每个节点上的按钮）或通过 `POST /api/v1/admin/nodes/settings` 读取和修改，面板登录信息只使用一次，绝不保存 |
+| `security.ota_check_board` | on | 拒绝为另一种电路板（Wi-Fi 或以太网）构建的上传固件；镜像带有所属电路板的标记，节点在接收时读取 |
+| `security.ota_require_board_mark` | on | 同时拒绝不带电路板标记的镜像（较旧的固件）；要退回到标记出现之前的版本时请关闭 |
+| `siren_loop.enabled` | off | 监控警报器接线：模拟引脚读取警报器的回读线，状态消息带有 `siren_loop` 和 `siren_fault`（断线、短路或无法读取）；目前还没有电路板具备回读输入 |
+| `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | 回读引脚；低于多少毫伏为线路短路、不超过多少毫伏为警报器在位（高于则断线）；读数需持续多久才报告或解除故障（100–60000 毫秒）；警报器鸣响时是否也读取 |
+| `siren_loop.block_arming` | off | 在警报器接线故障期间，没有 `force` 就拒绝布防（如同有打开的防区）；无论如何都会报告故障 |
 
 静音后的再次鸣响限制为 3 次（`kMaxResounds`）。警笛继电器每次重启时处于断开状态，代理丢失时也不会自动断开。
 
@@ -178,7 +183,7 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 python -I tools/armor_ci_validate.py
 ```
 
-`ctest` 运行 18 个主机测试程序和 5 个 Python 检查；主机程序统计的检查共 488930 项，使用 `-Werror` 构建。
+`ctest` 运行 21 个主机测试程序和 5 个 Python 检查；主机程序统计的检查共 489145 项，使用 `-Werror` 构建。
 
 Python 检查：八种语言的面板文字、任务、保存路径、受锁保护的蓝牙会话以及面板调用的路由（部分节点还包括 HTTP 状态码或字体字形）
 

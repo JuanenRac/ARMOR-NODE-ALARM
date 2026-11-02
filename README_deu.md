@@ -21,15 +21,15 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 oder neuer">
   <img src="https://img.shields.io/badge/Language-C%2B%2B17-00599c.svg" alt="Sprache">
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
-  <img src="https://img.shields.io/badge/Checks-482%2C535-2ea44f.svg" alt="Checks">
-  <img src="https://img.shields.io/badge/Tests-488930%20checks-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
+  <img src="https://img.shields.io/badge/Tests-489145%20checks-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.5.1-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Reifegrad">
 </p>
 
 ---
 
-**Ehrlichkeitsprüfung - was heute läuft:** Es existiert der **Alarmkern** (was eine Zone ist, wie eine vom ADC gelesene verdrahtete Schleife zum Zustand wird, die Regeln der Zentrale: Scharfschalten, Verzögerungen, der Alarm, die Sirene, die PIN mit Sperre) und die darauf gebaute **Firmware des Knotens** (Einstellungen, Web-Panel, Nachrichten mit dem Server, die Brücke des Zigbee-Funkmoduls, ein Zigbee-Koordinator im Netzwerk, Relais, Bluetooth, signierte Updates), die für beide Platinen baut; der Kern, die Einstellungen, die Nachrichten und das Panel in einem echten Browser gegen einen Ersatzknoten werden auf einem Computer mit 488.930 Prüfungen in 18 Testprogrammen getestet. **Nichts lief auf einer Platine oder einer echten Anlage, keine Zone wurde verdrahtet und keine Sirene angeschlossen, die Zigbee-Kommunikation des Knotens mit einem Koordinator (lokal oder im Netzwerk) ist geschrieben und gegen einen Ersatzkoordinator getestet, lief aber nie gegen einen echten Koordinator oder Sensor, und dies ist keine zertifizierte Alarmanlage.**
+**Ehrlichkeitsprüfung - was heute läuft:** Es existiert der **Alarmkern** (was eine Zone ist, wie eine vom ADC gelesene verdrahtete Schleife zum Zustand wird, die Regeln der Zentrale: Scharfschalten, Verzögerungen, der Alarm, die Sirene, die PIN mit Sperre) und die darauf gebaute **Firmware des Knotens** (Einstellungen, Web-Panel, Nachrichten mit dem Server, die Brücke des Zigbee-Funkmoduls, ein Zigbee-Koordinator im Netzwerk, Relais, Bluetooth, signierte Updates), die für beide Platinen baut; der Kern, die Einstellungen, die Nachrichten und das Panel in einem echten Browser gegen einen Ersatzknoten werden auf einem Computer mit 489.145 Prüfungen in 21 Testprogrammen getestet. **Nichts lief auf einer Platine oder einer echten Anlage, keine Zone wurde verdrahtet und keine Sirene angeschlossen, die Zigbee-Kommunikation des Knotens mit einem Koordinator (lokal oder im Netzwerk) ist geschrieben und gegen einen Ersatzkoordinator getestet, lief aber nie gegen einen echten Koordinator oder Sensor, und dies ist keine zertifizierte Alarmanlage.**
 
 ---
 
@@ -41,7 +41,7 @@
 | Reifegrad | Funktionsfähig |
 | Rolle | Alarmzentralen-Feldknoten für ESP32-S3 (Familie: Field Nodes, übergeordnet: ARMOR-COMMON) |
 | Technik | C++17, ESP-IDF 5.5.5, ESP32-S3 |
-| Tests | 488930 Prüfungen in 18 Host-Programmen und 5 Python-Prüfungen (`ctest`) |
+| Tests | 489145 Prüfungen in 21 Host-Programmen und 5 Python-Prüfungen (`ctest`) |
 | Eingänge | Bis zu 8 verdrahtete Schleifen, Zigbee-Sensoren (IAS Zone) und Sirene (IAS WD), 4 Tasten |
 | Läuft auf | Eine ESP32-S3-Platine (Ethernet oder WLAN) mit Basisplatine; Host-Tests auf jedem Computer |
 | Auf echter Hardware | Noch keiner: keine Platine, Zone, Sirene oder kein Zigbee-Koordinator angeschlossen (nur Computertests, der Build und das Panel im Browser) |
@@ -58,7 +58,7 @@ Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heut
 | Bereich | Stand | Was das hier bedeutet |
 |---|---|---|
 | Software | 🟢 | Die Firmware wird im ESP-IDF-5.5.5-Container für beide Platinen (WLAN und Ethernet) gebaut. |
-| Tests | 🟢 | 488.930 Prüfungen in 18 Host-Programmen bestehen (`ctest`): die Zonen, die vom ADC gelesenen verdrahteten Schleifen, die Regeln für Scharfschalten, Verzögerungen, Sirene und PIN, die Einstellungen und die Nachrichten. |
+| Tests | 🟢 | 489.145 Prüfungen in 21 Host-Programmen bestehen (`ctest`): die Zonen, die vom ADC gelesenen verdrahteten Schleifen, die Regeln für Scharfschalten, Verzögerungen, Sirene und PIN, die Einstellungen und die Nachrichten. |
 | Protokolle und Daten | 🟠 | Die Zigbee-Kommunikation des Knotens selbst mit einem Koordinator, lokal oder im Netz, ist nur gegen einen nachgebildeten Koordinator getestet; sie ist nie auf einen echten Koordinator oder Sensor getroffen. |
 | Oberfläche | 🟡 | Das Web-Panel wurde in einem echten Browser gegen einen nachgebildeten Knoten erprobt, nicht auf einer Platine. |
 | Hardware | 🔴 | Keine Platine gebaut, keine Zone verdrahtet und weder Sirene noch Zigbee-Koordinator angeschlossen: Bisher lief nichts an einer echten Anlage. |
@@ -156,6 +156,11 @@ Dies ist kein zertifiziertes Alarmsystem ([docs/SAFETY.md](docs/SAFETY.md)): Es 
 | `zigbee_silence_min` | - | Wie lange das Zigbee des Servers schweigen darf, bevor der Knoten das Funkmodul übernimmt |
 | `CONFIG_ARMOR_NODE_ID`, `_SETUP_CODE`, `_FLEET_SECRET`, `_MQTT_*`, `_HEARTBEAT_S`, `_BLE_SETUP_MINUTES`, `_BOOT_FACTORY_RESET` | - | Die Einstellungen, die alle Knoten teilen: der Name (leer ergibt `armor-` und die letzten Bytes der MAC), der Einrichtungscode (leer: zufällig), das Flottengeheimnis (16+ Zeichen, nie im Repository), die ersten Broker-Einstellungen, der Herzschlag (2 bis 300 s), die Minuten der Bluetooth-Einrichtung (1 bis 120) und der Reset mit BOOT (8 s in den ersten 30 s) |
 | `system.login_limit_per_minute` | 30 (0-120) | Falsche Passwörter pro Minute, bevor das Panel die Anmeldung für alle sperrt (0 = kein globales Limit); in Studio (eine Schaltfläche an jedem Knoten) oder mit `POST /api/v1/admin/nodes/settings` lesen und ändern, wobei die Panel-Anmeldung einmal benutzt und nie gespeichert wird |
+| `security.ota_check_board` | on | Eine hochgeladene Firmware für die andere Platine (WLAN oder Ethernet) abweisen; das Image trägt ein Kennzeichen seiner Platine, das der Knoten beim Empfang liest |
+| `security.ota_require_board_mark` | on | Auch ein Image ohne Platinenkennzeichen (eine ältere Firmware) abweisen; zum Zurückgehen auf eine Version aus der Zeit vor den Kennzeichen ausschalten |
+| `siren_loop.enabled` | off | Die Verkabelung der Sirene überwachen: Ein Analogpin liest die Rückleseleitung der Sirene, und die Zustandsmeldung enthält `siren_loop` und `siren_fault` (unterbrochen, kurzgeschlossen oder nicht lesbar); noch keine Platine hat den Rückleseeingang |
+| `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | Der Rückleseanschluss, die Millivolt, unter denen die Leitung kurzgeschlossen ist und bis zu denen die Sirene da ist (darüber ist die Leitung unterbrochen), die Zeit, die ein Messwert halten muss, um eine Störung zu melden oder aufzuheben (100-60000 ms), und ob die Leitung auch gelesen wird, während die Sirene ertönt |
+| `siren_loop.block_arming` | off | Scharfschalten ohne `force` verweigern, solange die Verkabelung der Sirene gestört ist (wie bei einer offenen Zone); die Störung wird in jedem Fall gemeldet |
 
 Erneutes Auslösen nach einem Stummschalten ist auf 3 begrenzt (`kMaxResounds`). Das Sirenenrelais startet bei jedem Neustart offen und fällt nicht auf offen, wenn der Broker verloren geht.
 
@@ -178,7 +183,7 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 python -I tools/armor_ci_validate.py
 ```
 
-18 Host-Testprogramme und 5 Python-Prüfungen laufen unter `ctest`; 488930 Prüfungen, gezählt von den Host-Programmen, mit `-Werror` gebaut.
+21 Host-Testprogramme und 5 Python-Prüfungen laufen unter `ctest`; 489145 Prüfungen, gezählt von den Host-Programmen, mit `-Werror` gebaut.
 
 Python-Prüfungen: die Panel-Texte in acht Sprachen, die Tasks, die Speicherpfade, die Bluetooth-Sitzung unter ihrer Sperre und die vom Panel aufgerufenen Routen (und in manchen Knoten die HTTP-Codes oder die Glyphen der Schriften)
 

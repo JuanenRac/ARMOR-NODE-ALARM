@@ -21,15 +21,15 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 ou ultérieure">
   <img src="https://img.shields.io/badge/Language-C%2B%2B17-00599c.svg" alt="Langage">
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
-  <img src="https://img.shields.io/badge/Checks-482%2C535-2ea44f.svg" alt="Checks">
-  <img src="https://img.shields.io/badge/Tests-488930%20checks-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
+  <img src="https://img.shields.io/badge/Tests-489145%20checks-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.5.1-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturité">
 </p>
 
 ---
 
-**Vérification d'honnêteté - ce qui fonctionne aujourd'hui :** Ce qui existe, c'est le **cœur de l'alarme** (ce qu'est une zone, comment une boucle câblée lue par l'ADC devient un état, les règles de la centrale : armement, temporisations, l'alarme, la sirène, le PIN avec verrouillage) et le **firmware du nœud** construit dessus (réglages, panneau web, messages avec le serveur, le pont de la radio Zigbee, un coordinateur Zigbee sur le réseau, relais, Bluetooth, mises à jour signées), qui se compile pour les deux cartes ; le cœur, les réglages, les messages et le panneau dans un vrai navigateur contre un nœud factice sont testés sur un ordinateur avec 488 930 vérifications dans 18 programmes de test. **Rien n'a tourné sur une carte ni sur une installation réelle, aucune zone n'a été câblée ni aucune sirène connectée, la conversation Zigbee du nœud avec un coordinateur (local ou sur le réseau) est écrite et testée contre un coordinateur factice mais n'a jamais tourné contre un vrai coordinateur ni un vrai capteur, et ce n'est pas un système d'alarme certifié.**
+**Vérification d'honnêteté - ce qui fonctionne aujourd'hui :** Ce qui existe, c'est le **cœur de l'alarme** (ce qu'est une zone, comment une boucle câblée lue par l'ADC devient un état, les règles de la centrale : armement, temporisations, l'alarme, la sirène, le PIN avec verrouillage) et le **firmware du nœud** construit dessus (réglages, panneau web, messages avec le serveur, le pont de la radio Zigbee, un coordinateur Zigbee sur le réseau, relais, Bluetooth, mises à jour signées), qui se compile pour les deux cartes ; le cœur, les réglages, les messages et le panneau dans un vrai navigateur contre un nœud factice sont testés sur un ordinateur avec 489 145 vérifications dans 21 programmes de test. **Rien n'a tourné sur une carte ni sur une installation réelle, aucune zone n'a été câblée ni aucune sirène connectée, la conversation Zigbee du nœud avec un coordinateur (local ou sur le réseau) est écrite et testée contre un coordinateur factice mais n'a jamais tourné contre un vrai coordinateur ni un vrai capteur, et ce n'est pas un système d'alarme certifié.**
 
 ---
 
@@ -41,7 +41,7 @@
 | Maturité | Fonctionnel |
 | Rôle | Nœud de terrain centrale d'alarme pour ESP32-S3 (famille : Field Nodes, parent : ARMOR-COMMON) |
 | Technologie | C++17, ESP-IDF 5.5.5, ESP32-S3 |
-| Tests | 488930 vérifications dans 18 programmes hôte et 5 contrôles Python (`ctest`) |
+| Tests | 489145 vérifications dans 21 programmes hôte et 5 contrôles Python (`ctest`) |
 | Entrées | Jusqu'à 8 boucles câblées, capteurs Zigbee (IAS Zone) et sirène (IAS WD), 4 boutons |
 | Fonctionne sur | Une carte ESP32-S3 (Ethernet ou Wi-Fi) avec la carte de base ; tests sur hôte sur n'importe quel ordinateur |
 | Sur matériel réel | Aucun pour l'instant : ni carte, ni zone, ni sirène, ni coordinateur Zigbee connectés (seulement des tests sur ordinateur, la compilation et le panneau dans un navigateur) |
@@ -58,7 +58,7 @@ Chaque ligne est une partie de ce dépôt et le feu dit où elle en est aujourd'
 | Domaine | État | Ce que cela veut dire ici |
 |---|---|---|
 | Logiciel | 🟢 | Le firmware compile dans le conteneur ESP-IDF 5.5.5 pour les deux cartes (Wi-Fi et Ethernet). |
-| Tests | 🟢 | 488 930 vérifications dans 18 programmes d'hôte réussissent (`ctest`) : les zones, les boucles câblées lues par le CAN, les règles d'armement, de temporisation, de sirène et de PIN, les réglages et les messages. |
+| Tests | 🟢 | 489 145 vérifications dans 21 programmes d'hôte réussissent (`ctest`) : les zones, les boucles câblées lues par le CAN, les règles d'armement, de temporisation, de sirène et de PIN, les réglages et les messages. |
 | Protocoles et données | 🟠 | La conversation Zigbee du nœud lui-même avec un coordinateur, local ou sur le réseau, n'est testée que contre un coordinateur simulé ; elle n'a jamais rencontré un vrai coordinateur ni un vrai capteur. |
 | Interface | 🟡 | Le panneau web a été essayé dans un vrai navigateur contre un nœud simulé, pas sur une carte. |
 | Matériel | 🔴 | Aucune carte construite, aucune zone câblée et ni sirène ni coordinateur Zigbee connectés : rien n'a tourné sur une installation réelle. |
@@ -156,6 +156,11 @@ Ce n'est pas un système d'alarme certifié ([docs/SAFETY.md](docs/SAFETY.md)) :
 | `zigbee_silence_min` | - | Combien de temps le Zigbee du serveur peut se taire avant que le nœud prenne la radio |
 | `CONFIG_ARMOR_NODE_ID`, `_SETUP_CODE`, `_FLEET_SECRET`, `_MQTT_*`, `_HEARTBEAT_S`, `_BLE_SETUP_MINUTES`, `_BOOT_FACTORY_RESET` | - | Les réglages que tous les nœuds partagent : le nom (vide donne `armor-` et les derniers octets de la MAC), le code de configuration (vide : aléatoire), le secret de flotte (16+ caractères, jamais dans le dépôt), les premiers réglages du broker, le battement (de 2 à 300 s), les minutes de configuration Bluetooth (de 1 à 120) et la réinitialisation avec BOOT (8 s dans les 30 premières s) |
 | `system.login_limit_per_minute` | 30 (0-120) | Mots de passe erronés par minute avant que le panneau verrouille la connexion pour tous (0 = pas de limite globale) ; on le lit et le change depuis Studio (un bouton sur chaque nœud) ou avec `POST /api/v1/admin/nodes/settings`, l'identifiant du panneau étant utilisé une fois et jamais conservé |
+| `security.ota_check_board` | on | Refuser un firmware envoyé construit pour l'autre carte (Wi-Fi ou Ethernet) ; l'image porte une marque de sa carte que le nœud lit à l'arrivée |
+| `security.ota_require_board_mark` | on | Refuser aussi une image sans marque de carte (un ancien firmware) ; à désactiver pour revenir à une version faite avant les marques |
+| `siren_loop.enabled` | off | Surveiller le câblage de la sirène : une broche analogique lit la ligne de retour de la sirène et le message d'état porte `siren_loop` et `siren_fault` (coupé, en court-circuit ou illisible) ; aucune carte n'a encore l'entrée de retour |
+| `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | La broche de retour, les millivolts sous lesquels le fil est en court-circuit et jusqu'auxquels la sirène est là (au-dessus le fil est coupé), le temps qu'une lecture doit tenir pour signaler ou lever un défaut (100-60000 ms) et si la ligne est aussi lue pendant que la sirène sonne |
+| `siren_loop.block_arming` | off | Refuser d'armer sans `force` tant que le câblage de la sirène est en défaut (comme avec une zone ouverte) ; le défaut est signalé dans tous les cas |
 
 Les nouvelles sonneries après un silence sont limitées à 3 (`kMaxResounds`). Le relais de la sirène démarre ouvert à chaque redémarrage et ne retombe pas ouvert si le broker est perdu.
 
@@ -178,7 +183,7 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 python -I tools/armor_ci_validate.py
 ```
 
-18 programmes de test sur hôte et 5 contrôles Python tournent sous `ctest` ; 488930 vérifications comptées par les programmes hôte, compilés avec `-Werror`.
+21 programmes de test sur hôte et 5 contrôles Python tournent sous `ctest` ; 489145 vérifications comptées par les programmes hôte, compilés avec `-Werror`.
 
 Contrôles Python : les textes du panneau en huit langues, les tâches, les chemins de sauvegarde, la session Bluetooth sous son verrou et les routes appelées par le panneau (et, dans certains nœuds, les codes HTTP ou les glyphes des polices)
 

@@ -92,5 +92,29 @@ int main() {
   state();
   command("\"action\":\"disarm\"");
   state();                                                                              // the profile is gone with the disarm
+
+  // a node that supervises the wiring of its siren: the return line fine, then cut, then shorted, then mended (the message carries siren_loop and siren_fault only on such a node)
+  config::Settings watched = house();
+  watched.siren_loop.enabled = true;
+  watched.siren_loop.pin = board::kAnalogPins[0];
+  watched.siren_loop.timing.hold_ms = 1000;
+  watched.siren_loop.timing.clear_ms = 1000;
+  alarm::Runner guard(watched);
+  const auto guard_state = [&]() { std::printf("%s %s\n", alarm::topic(id, "state").c_str(), guard.state_json(stamp += 1000, now).c_str()); };
+  const auto watch = [&](double return_mv, std::uint64_t ms) {
+    const std::uint64_t until = now + ms;
+    while (now < until) { for (std::size_t i = 0; i < 4; ++i) guard.feed(i, kClosed, now); guard.feed_siren_loop(return_mv, now); guard.tick(now); now += 100; }
+  };
+  guard_state();                                                                        // not read yet: unknown
+  watch(1000, 3000);
+  guard_state();                                                                        // the siren is there
+  watch(3100, 3000);
+  guard_state();                                                                        // the wire is cut: a fault
+  watch(40, 3000);
+  guard_state();                                                                        // the wire is shorted
+  for (int i = 0; i < 60; ++i) { guard.feed_siren_loop_unreadable(now); guard.tick(now); now += 100; }
+  guard_state();                                                                        // the return line cannot be read
+  watch(1000, 3000);
+  guard_state();                                                                        // mended
   return 0;
 }

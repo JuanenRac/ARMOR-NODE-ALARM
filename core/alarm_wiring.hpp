@@ -38,7 +38,8 @@ inline bool takes_the_radio(const config::Settings& s) { return s.zigbee_local.a
 struct Wiring {
   std::array<ZoneInput, config::kZoneCount> zones{};
   std::array<bool, config::kButtonCount> buttons{};   // a button that arms the panel is read
-  bool needs_converter = false;                       // at least one analog loop: the converter is started
+  bool needs_converter = false;                       // at least one analog loop (or the siren's return line): the converter is started
+  bool siren_loop = false;                            // the siren's wiring is supervised: its return line is read (core/siren_loop.hpp)
   bool takes_radio = false;                           // the node creates the host of the Zigbee radio
   unsigned radio_after_s = 0;
   bool listens_zone_feed = true;                      // the server's information about the Zigbee zones: read even when the server may not command the panel
@@ -76,6 +77,8 @@ Wiring plan_wiring(const config::Settings& s, IndexOf index_of) {
   w.takes_radio = takes_the_radio(s);
   w.radio_after_s = w.takes_radio ? static_cast<unsigned>(s.zigbee_local.after_s) : 0;
   w.listens_command = s.server.commands;
+  w.siren_loop = s.siren_loop.enabled && !s.panel.siren_relay.empty() && s.siren_loop.pin >= 0;
+  if (w.siren_loop) w.needs_converter = true;
   if (!s.panel.siren_relay.empty()) {
     w.siren_relay = index_of(s.panel.siren_relay);
     w.siren_relay_unknown = w.siren_relay < 0;

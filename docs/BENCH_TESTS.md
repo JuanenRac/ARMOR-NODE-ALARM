@@ -10,7 +10,7 @@ The software of these checks is done and tested on a computer; what is left need
 | Zigbee coordinator on the board | a CC2652P | start the node | `zb_state_network` is `ready` in the state in under 60 s and a sensor pairs |
 | Zigbee coordinator on the network | an SLZB-06 | stop Zigbee2MQTT | the node takes ownership in under 30 s |
 | Siren | an IAS WD siren | fire a zone set to "always" | the fire pattern, and a retry after `learn()` |
-| Supervised siren loop | a return input on the board | cut the siren wiring | `siren_fault` is raised (needs the return input in the hardware) |
+| Supervised siren loop | the siren's wire taken through a divider to an analog pin (the return input; no board has it yet), `siren_loop.enabled` on with that pin | with the siren connected, then cut the wire, then short it, then unplug the converter's input, then mend it, then sound the siren | `siren_loop` reads `ok`, then `open` and `siren_fault` is true after `hold_ms`, then `short`, then `unreadable`, and back to `ok` after `clear_ms`; the siren sounding does not raise a fault; the millivolts of each state set the limits `siren_loop.short_below_mv` and `siren_loop.ok_below_mv` (the logic is tested with a simulated loop in `tests/test_siren_loop.cpp`) |
 
 ## Checks every node needs on a real board
 
@@ -20,7 +20,7 @@ Connect the board by USB, open the console at 115200 baud and note the result of
 |---|---|---|---|
 | Bluetooth session isolation | the node and a phone with the app | connect and disconnect over Bluetooth 50 times in a row (open "Set up a node", close it) | no restart (the uptime in the node state never drops); the next session never receives an answer meant for the previous one |
 | Settings survive an update | a node with the previous firmware | save settings, then update over the air to a firmware that adds a field or makes a value invalid | it starts, keeps the valid settings, drops only the bad field and says so in the log; it does not fall back to factory settings |
-| Update for another board | a node of one board (for example Ethernet) | upload through the web panel the image of the other board of the same project | today the manual upload only compares the project name and accepts it; the update from GitHub must refuse it. After the change both must refuse with 422 |
+| Update for another board | a node of one board (for example Ethernet) | upload through the web panel the image of the other board of the same project | the upload is refused with 422 `wrong_board` (the image carries a mark of its board that the node reads while it arrives, `core/image_board.hpp`); an image from before the marks is refused as `no_board_mark` unless `security.ota_require_board_mark` is off, and the check as a whole is `security.ota_check_board`. The update from GitHub is refused too (the signature covers the board). Needs an image built with the marks on both boards |
 | Backup broker | a node with two brokers configured | stop the main broker while the backup one is active, then bring it back | no lost readings, no 30 s without data every 30 minutes, and the node returns to the main broker |
 | Router that does not answer ping | a node behind such a router | leave it running 10 minutes | the network watchdog does not disconnect the Wi-Fi |
 | Network scan on Ethernet + access point | an Ethernet board in the Ethernet + access point mode | start a scan from the panel | the log shows the empty station is not reconnected and the Ethernet link does not drop |

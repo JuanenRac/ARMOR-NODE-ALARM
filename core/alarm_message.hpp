@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "alarm_panel.hpp"
+#include "siren_loop.hpp"
 #include "alarm_zone.hpp"
 #include "arm_profile.hpp"
 #include "json.hpp"
@@ -44,7 +45,7 @@ struct ZoneReport {
 constexpr std::size_t kMaxReportedEvents = 10;
 
 // The state message. `now_ms` is the node's own clock (events are told as seconds ago); `timestamp_ms` is what goes in the message (the wall clock, or the time since start).
-inline std::string state_json(const std::string& node_id, std::uint64_t timestamp_ms, std::uint64_t now_ms, const Panel& panel, bool locked_out, bool commands_enabled, const std::vector<ZoneReport>& zones) {
+inline std::string state_json(const std::string& node_id, std::uint64_t timestamp_ms, std::uint64_t now_ms, const Panel& panel, bool locked_out, bool commands_enabled, const std::vector<ZoneReport>& zones, const SirenLoopReport& siren_loop = SirenLoopReport{}) {
   json::Writer w;
   w.begin_object().field("kind", "alarm").field("node_id", node_id).key("timestamp_ms").integer(static_cast<long long>(timestamp_ms));
   w.field("phase", phase_text(panel.phase())).field("mode", mode_text(panel.mode())).field("siren", panel.siren()).field("locked_out", locked_out).field("commands_enabled", commands_enabled);
@@ -74,6 +75,8 @@ inline std::string state_json(const std::string& node_id, std::uint64_t timestam
   }
   w.end_array();
   w.field("arm_profiles", true);   // this firmware understands the arming profiles of the arm command
+  // the siren's wiring, only when the node supervises it (siren_loop.enabled): "ok", "open", "short" or "unreadable" (and "unknown" until the first reading has held), and whether that is a fault
+  if (siren_loop.supervised) w.field("siren_loop", siren_loop_text(siren_loop.state)).field("siren_fault", siren_loop.fault);
   if (panel.profile() != nullptr && panel.mode() != Mode::kDisarmed) w.field("profile", panel.profile()->id);
   w.end_object();
   return w.str();

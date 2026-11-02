@@ -21,15 +21,15 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 o posterior">
   <img src="https://img.shields.io/badge/Language-C%2B%2B17-00599c.svg" alt="Lenguaje">
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
-  <img src="https://img.shields.io/badge/Checks-482%2C535-2ea44f.svg" alt="Checks">
-  <img src="https://img.shields.io/badge/Tests-488930%20checks-2ea44f.svg" alt="Pruebas">
+  <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
+  <img src="https://img.shields.io/badge/Tests-489145%20checks-2ea44f.svg" alt="Pruebas">
   <img src="https://img.shields.io/badge/Version-0.5.1-0f6cbd.svg" alt="Versión">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Madurez">
 </p>
 
 ---
 
-**Comprobación de honestidad - qué funciona hoy:** Lo que existe es el **núcleo de la alarma** (qué es una zona, cómo un bucle cableado leído por el ADC se convierte en un estado, las reglas de la central: armado, retardos, la alarma, la sirena, el PIN con bloqueo) y el **firmware del nodo** construido sobre él (ajustes, panel web, mensajes con el servidor, el puente de la radio Zigbee, un coordinador Zigbee en la red, relés, Bluetooth, actualizaciones firmadas), que compila para las dos placas; el núcleo, los ajustes, los mensajes y el panel en un navegador real contra un nodo de pega se prueban en un ordenador con 488.930 comprobaciones en 18 programas de test. **Nada ha corrido en una placa ni en una instalación real, no se ha cableado ninguna zona ni conectado ninguna sirena, la conversación Zigbee del propio nodo con un coordinador (local o en la red) está escrita y probada contra un coordinador de pega pero nunca ha corrido contra un coordinador ni un sensor reales, y esto no es un sistema de alarma certificado.**
+**Comprobación de honestidad - qué funciona hoy:** Lo que existe es el **núcleo de la alarma** (qué es una zona, cómo un bucle cableado leído por el ADC se convierte en un estado, las reglas de la central: armado, retardos, la alarma, la sirena, el PIN con bloqueo) y el **firmware del nodo** construido sobre él (ajustes, panel web, mensajes con el servidor, el puente de la radio Zigbee, un coordinador Zigbee en la red, relés, Bluetooth, actualizaciones firmadas), que compila para las dos placas; el núcleo, los ajustes, los mensajes y el panel en un navegador real contra un nodo de pega se prueban en un ordenador con 489.145 comprobaciones en 21 programas de test. **Nada ha corrido en una placa ni en una instalación real, no se ha cableado ninguna zona ni conectado ninguna sirena, la conversación Zigbee del propio nodo con un coordinador (local o en la red) está escrita y probada contra un coordinador de pega pero nunca ha corrido contra un coordinador ni un sensor reales, y esto no es un sistema de alarma certificado.**
 
 ---
 
@@ -41,7 +41,7 @@
 | Madurez | Funcional |
 | Función | Nodo de campo central de alarma para ESP32-S3 (familia: Field Nodes, padre: ARMOR-COMMON) |
 | Tecnología | C++17, ESP-IDF 5.5.5, ESP32-S3 |
-| Pruebas | 488930 comprobaciones en 18 programas de host y 5 de Python (`ctest`) |
+| Pruebas | 489145 comprobaciones en 21 programas de host y 5 de Python (`ctest`) |
 | Entradas | Hasta 8 lazos cableados, sensores Zigbee (IAS Zone) y sirena (IAS WD), 4 botones |
 | Funciona en | Una placa ESP32-S3 (Ethernet o Wi-Fi) con la placa base; pruebas de host en cualquier ordenador |
 | En hardware real | Ninguno todavía: ninguna placa, zona, sirena ni coordinador Zigbee conectados (solo tests en ordenador, la compilación y el panel en un navegador) |
@@ -58,7 +58,7 @@ Cada línea es una parte de este repositorio y la luz dice hasta dónde llega ho
 | Área | Estado | Qué significa aquí |
 |---|---|---|
 | Software | 🟢 | El firmware compila en el contenedor ESP-IDF 5.5.5 para las dos placas (Wi-Fi y Ethernet). |
-| Pruebas | 🟢 | Pasan 488.930 comprobaciones en 18 programas de host (`ctest`): las zonas, los lazos cableados leídos por el ADC, las reglas de armado, retardos, sirena y PIN, los ajustes y los mensajes. |
+| Pruebas | 🟢 | Pasan 489.145 comprobaciones en 21 programas de host (`ctest`): las zonas, los lazos cableados leídos por el ADC, las reglas de armado, retardos, sirena y PIN, los ajustes y los mensajes. |
 | Protocolos y datos | 🟠 | La conversación Zigbee del propio nodo con un coordinador, local o en la red, solo se ha probado contra un coordinador simulado; nunca se ha encontrado con un coordinador o un sensor reales. |
 | Interfaz | 🟡 | El panel web se ha ejercitado en un navegador real contra un nodo simulado, no en una placa. |
 | Hardware | 🔴 | Ninguna placa construida, ninguna zona cableada y ninguna sirena o coordinador Zigbee conectados: nada ha funcionado en una instalación real. |
@@ -156,6 +156,11 @@ No es un sistema de alarma certificado ([docs/SAFETY.md](docs/SAFETY.md)): es un
 | `zigbee_silence_min` | - | Cuánto puede callar el Zigbee del servidor antes de que el nodo tome la radio |
 | `CONFIG_ARMOR_NODE_ID`, `_SETUP_CODE`, `_FLEET_SECRET`, `_MQTT_*`, `_HEARTBEAT_S`, `_BLE_SETUP_MINUTES`, `_BOOT_FACTORY_RESET` | - | Los ajustes que comparten todos los nodos: el nombre (vacío da `armor-` y los últimos bytes de la MAC), el código de puesta en marcha (vacío: aleatorio), el secreto de flota (16+ caracteres, nunca en el repositorio), los primeros ajustes del broker, el latido (de 2 a 300 s), los minutos de puesta en marcha por Bluetooth (de 1 a 120) y el reinicio con BOOT (8 s en los primeros 30 s) |
 | `system.login_limit_per_minute` | 30 (0-120) | Contraseñas erróneas por minuto antes de que el panel bloquee el acceso a todos (0 = sin límite global); se lee y se cambia desde Studio (un botón en cada nodo) o con `POST /api/v1/admin/nodes/settings`, donde el acceso al panel se usa una vez y nunca se guarda |
+| `security.ota_check_board` | on | Rechazar un firmware subido hecho para la otra placa (Wi-Fi o Ethernet); la imagen lleva una marca de su placa que el nodo lee mientras llega |
+| `security.ota_require_board_mark` | on | Rechazar también una imagen sin marca de placa (un firmware antiguo); desactívelo para volver a una versión hecha antes de las marcas |
+| `siren_loop.enabled` | off | Supervisar el cableado de la sirena: un pin analógico lee la línea de retorno de la sirena y el mensaje de estado lleva `siren_loop` y `siren_fault` (cortado, en cortocircuito o ilegible); ninguna placa tiene aún la entrada de retorno |
+| `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | El pin de retorno, los milivoltios por debajo de los cuales el cable está en cortocircuito y hasta los cuales la sirena está (por encima el cable está cortado), el tiempo que una lectura debe mantenerse para avisar o quitar un fallo (100-60000 ms) y si la línea también se lee mientras suena la sirena |
+| `siren_loop.block_arming` | off | Rechazar armar sin `force` mientras el cableado de la sirena esté en fallo (como con una zona abierta); el fallo se avisa en cualquier caso |
 
 Los resonidos tras un silencio se limitan a 3 (`kMaxResounds`). El relé de la sirena arranca abierto en cada reinicio y no cae a abierto si se pierde el broker.
 
@@ -178,7 +183,7 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 python -I tools/armor_ci_validate.py
 ```
 
-18 programas de prueba de host y 5 comprobaciones en Python se ejecutan con `ctest`; 488930 comprobaciones contadas por los programas de host, compilados con `-Werror`.
+21 programas de prueba de host y 5 comprobaciones en Python se ejecutan con `ctest`; 489145 comprobaciones contadas por los programas de host, compilados con `-Werror`.
 
 Comprobaciones Python: los textos del panel en ocho idiomas, las tareas, las rutas de guardado, la sesión Bluetooth bajo su bloqueo y las rutas que llama el panel (y, en algunos nodos, los códigos HTTP o los glifos de las fuentes)
 

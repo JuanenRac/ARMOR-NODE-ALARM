@@ -15,6 +15,7 @@
 #include "alarm_panel.hpp"
 #include "alarm_policy.hpp"
 #include "alarm_zone.hpp"
+#include "siren_loop.hpp"
 
 namespace armor::alarm {
 
@@ -46,7 +47,8 @@ struct Reply {
 class Runner {
  public:
   explicit Runner(const config::Settings& settings)
-      : settings_(settings), panel_(settings.panel.timing, zones_of(settings), settings.panel.pin) {
+      : settings_(settings), panel_(settings.panel.timing, zones_of(settings), settings.panel.pin),
+        siren_loop_(settings.siren_loop.enabled, settings.siren_loop.limits, settings.siren_loop.timing) {
     for (std::size_t i = 0; i < config::kZoneCount; ++i) {
       ZoneView& view = views_[i];
       const config::ZoneSetting& zone = settings.zones[i];
@@ -80,6 +82,12 @@ class Runner {
     panel_.set_zone(view.id, ZoneState::kTrouble, now_ms);
     view.bypassed = panel_.bypassed(view.id);
   }
+
+  // The reading, in millivolts, of the return line of the siren (core/siren_loop.hpp); ignored when the loop is not supervised (siren_loop.enabled).
+  void feed_siren_loop(double millivolts, std::uint64_t now_ms) { siren_loop_.feed(millivolts, panel_.siren(), now_ms); }
+  // The converter gave no reading of the return line this round.
+  void feed_siren_loop_unreadable(std::uint64_t now_ms) { siren_loop_.feed_unreadable(panel_.siren(), now_ms); }
+  const SirenLoop& siren_loop() const { return siren_loop_; }
 
   // The level of the pin of a digital zone (a contact to ground, pulled up): true when the pin reads high. A zone that is not digital ignores it.
   void feed_digital(std::size_t index, bool pin_high, std::uint64_t now_ms) {
@@ -225,7 +233,7 @@ class Runner {
   std::string state_json(std::uint64_t timestamp_ms, std::uint64_t now_ms) const {
     std::vector<ZoneReport> reports;
     for (const ZoneView& view : views_) if (view.enabled) reports.push_back({view.id, view.name, view.kind, view.state, view.bypassed});
-    return alarm::state_json(settings_.node_id, timestamp_ms, now_ms, panel_, panel_.locked_out(now_ms), settings_.server.commands, reports);
+    return alarm::state_json(settings_.node_id, timestamp_ms, now_ms, panel_, panel_.locked_out(now_ms), settings_.server.commands, reports, siren_loop_.report());
   }
 
   std::string result_json(std::uint64_t timestamp_ms, const Reply& reply) const { return alarm::result_json(settings_.node_id, timestamp_ms, reply.command, reply.refusal, panel_.phase()); }
@@ -244,6 +252,8 @@ class Runner {
   Refusal arm_checked(Mode mode, bool force, std::uint64_t now_ms, const ArmProfile* profile) {
     bool any_silent = false;
     if (panel_.phase() == Phase::kDisarmed && mode != Mode::kDisarmed) for (const ZoneView& view : views_) any_silent = any_silent || (view.enabled && view.zigbee && view.silent);
+    // a siren that is cut stops an arming without `force` only when the settings say so (siren_loop.block_arming); it is reported in the state message either way
+    if (settings_.siren_loop.block_arming && siren_loop_.fault() && panel_.phase() == Phase::kDisarmed && mode != Mode::kDisarmed && !force) return Refusal::kZonesOpen;
     if (any_silent && !force) return Refusal::kZonesOpen;
     const Refusal result = panel_.arm(mode, force, now_ms, profile);
     if (result == Refusal::kNone) for (std::size_t i = 0; i < views_.size(); ++i) left_out_[i] = views_[i].enabled && views_[i].zigbee && views_[i].silent;
@@ -257,6 +267,7 @@ class Runner {
 
   config::Settings settings_;
   Panel panel_;
+  SirenLoop siren_loop_;
   std::array<ZoneView, config::kZoneCount> views_;
   std::array<Debouncer, config::kZoneCount> filters_;
   std::array<std::uint8_t, config::kZoneCount> unreadable_{};

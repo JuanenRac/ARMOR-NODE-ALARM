@@ -19,6 +19,7 @@
 #include "config_common.hpp"
 #include "io_config.hpp"
 #include "local_zigbee.hpp"
+#include "siren_loop.hpp"
 #include "node_settings.hpp"
 #include "stored_load.hpp"
 
@@ -65,6 +66,17 @@ struct PanelSetting {
   std::string siren_relay;
 };
 
+// The supervision of the siren's wiring (core/siren_loop.hpp): an analog pin reads the return line of the siren through the installer's resistors, and the state message says
+// "siren_fault" when the siren is cut, unplugged or shorted. OFF by default (no board has the return input yet). `block_arming` makes an arming without `force` be refused ("zones_open")
+// while the loop is in fault: off by default, because refusing to arm the house for a wire is a decision the owner takes, not the firmware; the fault is always reported.
+struct SirenLoopSetting {
+  bool enabled = false;
+  int pin = -1;                       // the analog pin of the return line
+  alarm::SirenLoopLimits limits;      // millivolts: below short_below the wire is shorted, up to ok_below the siren is there, above it the wire is cut
+  alarm::SirenLoopTiming timing;      // how long a reading must hold, and whether the loop is read while the siren sounds
+  bool block_arming = false;
+};
+
 // Whether the server may arm and disarm the panel by a command (armor/alarm/<node>/command). OFF by default: the panel then answers only to its own page. On, the broker's access list must
 // allow it too (ARMOR-DEVOPS, mqtt_identity.sh alarm-commands <node> on): both are needed, and the server has its own switch.
 //
@@ -96,6 +108,7 @@ struct Settings : NodeSettings, IoSettings {
   std::array<ButtonSetting, kButtonCount> buttons;
   alarm::LoopLimits loop;
   PanelSetting panel;
+  SirenLoopSetting siren_loop;
   ServerLink server;
   ZigbeeLocal zigbee_local;
 };
@@ -175,6 +188,17 @@ inline void read_settings(const json::Value& document, Settings& s, Problems& pr
     value = static_cast<int>(t.zigbee_silence_min); read_int(*panel, "zigbee_silence_min", value, 0, 1440, "panel.zigbee_silence_min", problems); t.zigbee_silence_min = static_cast<std::uint32_t>(value);
     read_secret(*panel, "pin", s.panel.pin, "panel.pin", problems);
     read_text(*panel, "siren_relay", s.panel.siren_relay, 32, "panel.siren_relay", problems);
+  }
+  if (const json::Value* siren = document.get("siren_loop"); siren != nullptr && siren->is_object()) {
+    SirenLoopSetting& l = s.siren_loop;
+    read_bool(*siren, "enabled", l.enabled, "siren_loop.enabled", problems);
+    read_int(*siren, "pin", l.pin, -1, board::kLastGpio, "siren_loop.pin", problems);
+    read_double(*siren, "short_below_mv", l.limits.short_below_mv, 0.0, 3000.0, "siren_loop.short_below_mv", problems);
+    read_double(*siren, "ok_below_mv", l.limits.ok_below_mv, 0.0, 3000.0, "siren_loop.ok_below_mv", problems);
+    int ms = static_cast<int>(l.timing.hold_ms); read_int(*siren, "hold_ms", ms, 100, 60000, "siren_loop.hold_ms", problems); l.timing.hold_ms = static_cast<std::uint32_t>(ms);
+    ms = static_cast<int>(l.timing.clear_ms); read_int(*siren, "clear_ms", ms, 100, 60000, "siren_loop.clear_ms", problems); l.timing.clear_ms = static_cast<std::uint32_t>(ms);
+    read_bool(*siren, "read_while_sounding", l.timing.read_while_sounding, "siren_loop.read_while_sounding", problems);
+    read_bool(*siren, "block_arming", l.block_arming, "siren_loop.block_arming", problems);
   }
   if (const json::Value* local = document.get("zigbee_local"); local != nullptr && local->is_object()) {
     read_int(*local, "after_s", s.zigbee_local.after_s, 0, 3600, "zigbee_local.after_s", problems);
@@ -272,6 +296,14 @@ inline Problems validate(const Settings& s) {
     for (const RelaySetting& relay : s.relays) if (relay.enabled && relay.name == s.panel.siren_relay) found = true;
     if (!found) bad(problems, "panel.siren_relay", "unknown_relay");
   }
+  if (s.siren_loop.enabled) {
+    // the supervision needs a siren to supervise and a pin of its own that the converter can read
+    if (s.panel.siren_relay.empty()) bad(problems, "siren_loop.enabled", "needs_siren");
+    if (s.siren_loop.pin < 0) bad(problems, "siren_loop.pin", "required");
+    else if (!board::analog_capable(s.siren_loop.pin)) bad(problems, "siren_loop.pin", board::assignable(s.siren_loop.pin) ? "not_analog" : "reserved");
+    else if (!claims.claim(s.siren_loop.pin, "siren_loop")) bad(problems, "siren_loop.pin", "conflict");
+    if (!alarm::siren_limits_are_valid(s.siren_loop.limits)) bad(problems, "siren_loop.short_below_mv", "range");
+  }
   if (s.server.commands && !s.mqtt.enabled) bad(problems, "server.commands", "needs_broker");
   if (!s.server.zone_feed_key.empty() && !zone_feed_key_is_valid(s.server.zone_feed_key)) bad(problems, "server.zone_feed_key", "invalid");
   if (s.server.zone_signature == Choice::kOn && s.server.zone_feed_key.empty()) bad(problems, "server.zone_feed_key", "required");   // a signature nobody can check would shut the feed for good
@@ -306,6 +338,8 @@ inline std::string to_json(const Settings& s, bool secrets) {
       .field("lockout_s", static_cast<long long>(s.panel.timing.lockout_s)).field("zigbee_silence_min", static_cast<long long>(s.panel.timing.zigbee_silence_min)).field("siren_relay", s.panel.siren_relay);
   if (secrets) w.field("pin", s.panel.pin); else w.field("pin_set", !s.panel.pin.empty());
   w.end_object();
+  w.key("siren_loop").begin_object().field("enabled", s.siren_loop.enabled).field("pin", s.siren_loop.pin).key("short_below_mv").number(s.siren_loop.limits.short_below_mv).key("ok_below_mv").number(s.siren_loop.limits.ok_below_mv)
+      .field("hold_ms", static_cast<long long>(s.siren_loop.timing.hold_ms)).field("clear_ms", static_cast<long long>(s.siren_loop.timing.clear_ms)).field("read_while_sounding", s.siren_loop.timing.read_while_sounding).field("block_arming", s.siren_loop.block_arming).end_object();
   w.key("server").begin_object().field("commands", s.server.commands).field("config_hash", to_text(s.server.config_hash)).field("zone_feed", to_text(s.server.zone_feed)).field("zone_signature", to_text(s.server.zone_signature)).field("disarm_pin", to_text(s.server.disarm_pin));
   if (secrets) w.field("zone_feed_key", s.server.zone_feed_key); else w.field("zone_feed_key_set", !s.server.zone_feed_key.empty());
   w.end_object();

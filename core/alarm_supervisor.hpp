@@ -135,6 +135,7 @@ class Supervisor {
   std::string signature(std::uint64_t now_ms) const {
     std::string text = std::string(phase_text(runner_.panel().phase())) + mode_text(runner_.panel().mode()) + (runner_.siren() ? "S" : "s") + (runner_.locked_out(now_ms) ? "L" : "l");
     if (runner_.profile() != nullptr) text += "P" + runner_.profile()->id;
+    if (runner_.siren_loop().enabled()) text += std::string("W") + siren_loop_text(runner_.siren_loop().state());   // the siren's wiring changed: say so now
     for (const ZoneView& zone : runner_.zones()) if (zone.enabled) text += std::string(state_text(zone.state)) + (zone.bypassed ? "b" : "-");
     return text;
   }
