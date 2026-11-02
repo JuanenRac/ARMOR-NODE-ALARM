@@ -25,6 +25,8 @@ The bridge accepts two clients: the **primary** (the server running Zigbee2MQTT)
 
 Once it has the radio the panel talks to the Zigbee coordinator itself. It needs only a small part of Zigbee: the coordinator's serial protocol (Z-Stack) and the standard alarm clusters - **IAS Zone** (door, window, motion, smoke, panic) and **IAS WD** (a siren). It does not need a catalogue of devices. The Zigbee network (its keys and its devices) lives in the coordinator, so the sensors keep reporting without pairing again. To be proved on the real modules: the hand-over with Zigbee2MQTT, and that the sensors' reports reach whoever holds the radio.
 
+The takeover can be tried without a radio: `tools/znp_coordinator_sim.py` plays a coordinator over TCP (the node's bridge can lend its line to a coordinator on the network), and `tests/znp_failover_node.cpp` runs the node's side against it, from the server's absence to the siren's warning and the hand-back. It proves the conversation, not a real coordinator.
+
 ## The panel's copy of the settings
 
 Without the server the panel needs to know which sensor is which zone, the delays, the PIN, which zones are always-zones and which siren sounds. Today the panel has its own copy, set in its own page (and by the server's Alarm Designer through the node's API); the server does not yet push the settings by itself each time they change - that is a proposal.

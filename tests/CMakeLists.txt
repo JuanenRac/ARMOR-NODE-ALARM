@@ -71,3 +71,13 @@ if(Python3_FOUND)
   # the routes every node of the family serves, the routes the panel calls, and the stand-in node the panel is tried against
   add_test(NAME routes COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_routes.py)
 endif()
+
+# the node's failover against a coordinator that lives in another process (ZNP over TCP): needs POSIX sockets
+if(UNIX)
+  add_executable(znp_failover_node znp_failover_node.cpp)
+  if(Python3_FOUND)
+    add_test(NAME znp_failover COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_znp_failover.py $<TARGET_FILE:znp_failover_node>)
+  endif()
+elseif(Python3_FOUND)
+  add_test(NAME znp_failover COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_znp_failover.py)
+endif()

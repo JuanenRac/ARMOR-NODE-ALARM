@@ -243,6 +243,18 @@
             "zh": "panel_mock.mjs（模拟节点）、panel_browser_test.mjs、共享的 CI 检查",
             "pt": "panel_mock.mjs (um nó de substituição), panel_browser_test.mjs, as verificações de CI partilhadas"
           }
+        },
+        {
+          "desc": {
+            "en": "znp_coordinator_sim.py (a stand-in Zigbee coordinator)",
+            "es": "znp_coordinator_sim.py (un coordinador Zigbee de pruebas)",
+            "de": "znp_coordinator_sim.py (ein Ersatz-Zigbee-Koordinator)",
+            "fr": "znp_coordinator_sim.py (un coordinateur Zigbee de substitution)",
+            "it": "znp_coordinator_sim.py (un coordinatore Zigbee sostitutivo)",
+            "ja": "znp_coordinator_sim.py（代役の Zigbee コーディネーター）",
+            "zh": "znp_coordinator_sim.py（模拟 Zigbee 协调器）",
+            "pt": "znp_coordinator_sim.py (um coordenador Zigbee de substituição)"
+          }
         }
       ]
     },
