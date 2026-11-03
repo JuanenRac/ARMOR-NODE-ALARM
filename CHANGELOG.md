@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A control order's command id is sixteen lowercase hexadecimal digits, as in every command of the family** (the shared `control_gate.hpp`; the alarm messages already said so).
 - **The launchers find the shared repository through `ARMOR_COMMON_DIR`:** `build`, `build-test`, `test` and `run` (`.sh` and `.bat`) use the folder named by that variable when it is set and the sibling `ARMOR-COMMON` folder otherwise, so a checkout with another layout builds without changing a file.
 - **The failover can be tried end to end with no radio:** `tools/znp_coordinator_sim.py` is a Zigbee coordinator that exists only as a program and speaks the coordinator's serial protocol over TCP (it answers the start-up, the address lookups and the sirens, and plays the reports of sensors on a timetable); `tests/znp_failover_node.cpp` runs the node's own conversation against it (the server away, the node takes the radio, learns the sensor and the siren, arms, alarms when the sensor opens, tells the siren to sound, and lets go when the server is back), and `tests/check_znp_failover.py` checks both. Nothing has run on a real coordinator.
 - **The README shows screenshots of the web panel of the node:** four pictures with a sentence under each, in the eight languages, taken headless against a stand-in node with made-up sample data by `tools/capture_screenshots.py` and listed in `docs/screenshots.json`; the pictures weigh at most 400 KB each.
