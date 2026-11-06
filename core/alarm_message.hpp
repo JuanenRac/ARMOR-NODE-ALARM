@@ -211,7 +211,9 @@ inline bool parse_zone_feed(const std::string& text, ZoneFeed& out) {
     if (!(seq->number >= 0.0 && seq->number <= 9007199254740991.0) || seq->number != static_cast<double>(static_cast<std::uint64_t>(seq->number))) return false;
     for (const char c : sig->text) if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))) return false;
   }
-  if (zone == nullptr || !zone->is_string() || zone->text.empty() || zone->text.size() > 32) return false;
+  // the zone is named as everywhere else in A.R.M.O.R.: a lowercase letter or digit, then letters, digits, - and _ (at most 32). `battery_low` may be left out (a server that does not say it).
+  if (zone == nullptr || !zone->is_string() || zone->text.empty() || zone->text.size() > 32 || zone->text.front() == '-' || zone->text.front() == '_') return false;
+  for (const char c : zone->text) if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '_')) return false;
   if (state == nullptr || !state->is_string() || (low != nullptr && !low->is_bool())) return false;
   ZoneFeed feed;
   feed.zone_id = zone->text;

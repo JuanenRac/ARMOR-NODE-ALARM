@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The messages are tested against a seeded oracle:** the shared firmware now carries the readers and writers that ARMOR-COMMON generates from its schemas (`core/armor_wire.hpp`) and a host test (`tests/test_wire.cpp`) that reads the seeded cases of the contracts (each with the verdict of the Python validator) and checks, with the compiler and the flags of this project, that the generated validator, reader and writer agree on every one, and that the parsers of this node for the messages it receives (the alarm command, the zone message, the policy and the arming profile) never accept what the contract refuses. The zone message is now read with the name of a zone as everywhere else in A.R.M.O.R. (a lowercase letter or digit, then letters, digits, - and _), where it used to take any text of up to 32 characters. The shared control order is checked the same way.
+
 ## [0.5.3] - The health report says which contracts the firmware was checked against: new main/contractversion.hpp (the number the shared repository pins and a test there compares) and the shared health report now carries it as contract,... (and 4 more changes)
 
 - **The health report says which contracts the firmware was checked against:** new `main/contract_version.hpp` (the number the shared repository pins and a test there compares) and the shared health report now carries it as `contract`, so the server and Studio can warn about a node built against other contracts. The shared firmware files are copied again from the shared repository.
