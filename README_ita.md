@@ -41,7 +41,7 @@
 | Maturità | Funzionale |
 | Ruolo | Nodo di campo centrale di allarme per ESP32-S3 (famiglia: Field Nodes, padre: ARMOR-COMMON) |
 | Tecnologia | C++17, ESP-IDF 5.5.5, ESP32-S3 |
-| Test | 489145 verifiche in 21 programmi host e 6 verifiche Python (`ctest`) |
+| Test | 489145 verifiche in 22 programmi host e 6 verifiche Python (`ctest`) |
 | Ingressi | Fino a 8 anelli cablati, sensori Zigbee (IAS Zone) e sirena (IAS WD), 4 pulsanti |
 | Gira su | Una scheda ESP32-S3 (Ethernet o Wi-Fi) con la scheda base; test su host su qualsiasi computer |
 | Su hardware reale | Ancora nessuno: nessuna scheda, zona, sirena o coordinatore Zigbee collegati (solo test su computer, la compilazione e il pannello in un browser) |
@@ -58,7 +58,7 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 | Area | Stato | Cosa significa qui |
 |---|---|---|
 | Software | 🟢 | Il firmware compila nel contenitore ESP-IDF 5.5.5 per entrambe le schede (Wi-Fi ed Ethernet). |
-| Test | 🟢 | Superano 489.145 controlli in 21 programmi host (`ctest`): le zone, i circuiti cablati letti dall'ADC, le regole di inserimento, ritardi, sirena e PIN, le impostazioni e i messaggi. |
+| Test | 🟢 | Superano 489.145 controlli in 22 programmi host (`ctest`): le zone, i circuiti cablati letti dall'ADC, le regole di inserimento, ritardi, sirena e PIN, le impostazioni e i messaggi. |
 | Protocolli e dati | 🟠 | La conversazione Zigbee del nodo stesso con un coordinatore, locale o in rete, è provata solo contro un coordinatore simulato; non ha mai incontrato un coordinatore o un sensore reali. |
 | Interfaccia | 🟡 | Il pannello web è stato provato in un browser reale contro un nodo simulato, non su una scheda. |
 | Hardware | 🔴 | Nessuna scheda costruita, nessuna zona cablata e nessuna sirena o coordinatore Zigbee collegati: nulla ha funzionato su un impianto reale. |
@@ -202,7 +202,7 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 python -I tools/armor_ci_validate.py
 ```
 
-21 programmi di test su host e 6 verifiche Python girano con `ctest`; 489145 verifiche contate dai programmi host, compilati con `-Werror`.
+22 programmi di test su host e 6 verifiche Python girano con `ctest`; 489145 verifiche contate dai programmi host, compilati con `-Werror`.
 
 Verifiche Python: i testi del pannello in otto lingue, i task, i percorsi di salvataggio, la sessione Bluetooth sotto il suo lock e i percorsi chiamati dal pannello (e, in alcuni nodi, i codici HTTP o i glifi dei caratteri)
 
