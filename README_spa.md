@@ -41,7 +41,7 @@
 | Madurez | Funcional |
 | Función | Nodo de campo central de alarma para ESP32-S3 (familia: Field Nodes, padre: ARMOR-COMMON) |
 | Tecnología | C++17, ESP-IDF 5.5.5, ESP32-S3 |
-| Pruebas | 489145 comprobaciones en 21 programas de host y 5 de Python (`ctest`) |
+| Pruebas | 489145 comprobaciones en 21 programas de host y 6 de Python (`ctest`) |
 | Entradas | Hasta 8 lazos cableados, sensores Zigbee (IAS Zone) y sirena (IAS WD), 4 botones |
 | Funciona en | Una placa ESP32-S3 (Ethernet o Wi-Fi) con la placa base; pruebas de host en cualquier ordenador |
 | En hardware real | Ninguno todavía: ninguna placa, zona, sirena ni coordinador Zigbee conectados (solo tests en ordenador, la compilación y el panel en un navegador) |
@@ -202,7 +202,7 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 python -I tools/armor_ci_validate.py
 ```
 
-21 programas de prueba de host y 5 comprobaciones en Python se ejecutan con `ctest`; 489145 comprobaciones contadas por los programas de host, compilados con `-Werror`.
+21 programas de prueba de host y 6 comprobaciones en Python se ejecutan con `ctest`; 489145 comprobaciones contadas por los programas de host, compilados con `-Werror`.
 
 Comprobaciones Python: los textos del panel en ocho idiomas, las tareas, las rutas de guardado, la sesión Bluetooth bajo su bloqueo y las rutas que llama el panel (y, en algunos nodos, los códigos HTTP o los glifos de las fuentes)
 

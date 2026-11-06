@@ -41,7 +41,7 @@
 | 成熟度 | 可用 |
 | 角色 | ESP32-S3 报警面板现场节点（家族：Field Nodes，上级：ARMOR-COMMON） |
 | 技术栈 | C++17, ESP-IDF 5.5.5, ESP32-S3 |
-| 测试 | 489145 项检查（21 个主机程序和 5 项 Python 检查，`ctest`） |
+| 测试 | 489145 项检查（21 个主机程序和 6 项 Python 检查，`ctest`） |
 | 输入 | 最多 8 个有线回路、Zigbee 传感器（IAS Zone）和警笛（IAS WD）、4 个按钮 |
 | 运行位置 | 带底板的 ESP32-S3 电路板（以太网或 Wi-Fi）；主机测试可在任何计算机上运行 |
 | 真实硬件 | 暂无：没有连接板子、防区、警笛或 Zigbee 协调器（仅有计算机测试、构建和浏览器中的面板） |
@@ -202,7 +202,7 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 python -I tools/armor_ci_validate.py
 ```
 
-`ctest` 运行 21 个主机测试程序和 5 个 Python 检查；主机程序统计的检查共 489145 项，使用 `-Werror` 构建。
+`ctest` 运行 21 个主机测试程序和 6 个 Python 检查；主机程序统计的检查共 489145 项，使用 `-Werror` 构建。
 
 Python 检查：八种语言的面板文字、任务、保存路径、受锁保护的蓝牙会话以及面板调用的路由（部分节点还包括 HTTP 状态码或字体字形）
 
