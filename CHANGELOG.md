@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A shim for the simulator's MQTT output:** `tests/mqtt_shim.cpp` is built from the same core files as the firmware (the loop classifier, the panel with its delays, zones, siren and restore after a restart, and the writer of the alarm message) and prints the messages the node would publish for the loop voltages and commands it is given, so ARMOR-SIMULATOR can send them to a real broker and the server bench can check that the real server takes them. No board is involved and nothing here has run on one.
+
 ## [0.5.4] - Simulation bench: tests/simbench.cpp is built from the same core files as the firmware and is fed by ARMOR-SIMULATOR (python -m armorsimulator.nodebench --bus alarm-loop) with the voltage of a wired alarm loop (bounce, noise,... (and 1 more changes)
 
 - **Simulation bench:** `tests/sim_bench.cpp` is built from the same core files as the firmware and is fed by ARMOR-SIMULATOR (`python -m armor_simulator.node_bench --bus alarm-loop`) with the voltage of a wired alarm loop (bounce, noise, power-up glitch, a cut or shorted wire, slow opening), and the answers are compared with what the documented rules require. The workflow `Simulation bench` runs it on every push, with no board and no ESP-IDF.
