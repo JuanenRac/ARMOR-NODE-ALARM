@@ -19,6 +19,10 @@ zigbee::Status status();
 // `set_local_host`), speaking Zigbee itself through the same LocalHost, and lets go of it the moment the server is back so that Zigbee2MQTT can have it. Call after set_local_host().
 void start_network(const config::IoSettings& settings);
 
+// With a coordinator on the network and a topic for the state of Zigbee2MQTT (zigbee_local.bridge_state_topic), reads that state so that the node takes the radio when Zigbee2MQTT is down even
+// while the broker is up. Call it BEFORE mqtt_link::start(): the subscription is taken with the first connection.
+void listen_for_server(const config::IoSettings& settings, const std::string& topic);
+
 // The node itself as a Zigbee host, for the moments when the radio is its own (the server's client has been away for `after_s` seconds; 0: never). The bridge's task calls these and no
 // others: `begin` when the node takes the radio, `end` when a client connects again, `feed` with what the radio says, `tick` every turn, `take_output` for what is to be written to it.
 class LocalHost {

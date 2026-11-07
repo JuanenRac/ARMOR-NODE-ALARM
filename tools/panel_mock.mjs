@@ -40,7 +40,7 @@ const config = {
   loop: { short_below_mv: 400, normal_below_mv: 1200, triggered_below_mv: 2400 },
   panel: { exit_delay_s: 10, entry_delay_s: 10, siren_max_s: 60, lockout_after: 3, lockout_s: 30, siren_relay: "siren", pin_set: true },
   server: { commands: false, config_hash: "policy", zone_feed: "policy", zone_signature: "policy", disarm_pin: "policy", zone_feed_key_set: false },
-  zigbee_local: { after_s: 0, sirens: [] },
+  zigbee_local: { bridge_state_topic: "", after_s: 0, sirens: [] },
   zigbee: { enabled: true, rx: 18, tx: 17, reset: 21, bootloader: 47, baud: 115200, port: 8888, allowed_client: "192.168.0.180", fallback_client: "", fallback_after_s: 30 },
   remote: { relays: false, link_timeout_s: 0, http: false, token_set: false },
   relays: Array.from({ length: 8 }, (_, i) => ({ enabled: i < 2, name: ["siren", "lights"][i] ?? `relay${i + 1}`, label: ["Siren", "Hall lights"][i] ?? "", pin: wired ? [38, 39, 40, 41, 42, 43, 44, 48][i] : [38, 39, 40, 41, 42, 11, 12, 13][i], active_low: i === 1 , interlock: "" })),

@@ -153,6 +153,7 @@ extern "C" void app_main() {
   armor::clocksync::start(settings);
   armor::improv_serial::start();   // Improv Wi-Fi over the USB cable (ESP Web Tools)
   const bool panel_ok = network_ok && armor::web::start(settings);
+  if (!setup) armor::zigbee_bridge::listen_for_server(settings, settings.zigbee_local.bridge_state_topic);   // before the broker link starts: it subscribes with the first connection
   armor::mqtt_link::start(settings);
   // The health report every node says about itself (uptime, why it restarted, memory, link, broker reconnects, the last error): armor/health/<node>, see ARMOR-COMMON node_health.schema.json.
   if (!setup && settings.mqtt.enabled) {

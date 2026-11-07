@@ -8,6 +8,7 @@
 #include "zigbee_bridge.hpp"
 
 #include "core/radio_owner.hpp"
+#include "core/z2m_watch.hpp"
 #include "mqtt_link.hpp"
 
 #include <cerrno>
@@ -44,6 +45,9 @@ LocalHost* g_host = nullptr;
 unsigned g_local_after_s = 0;
 std::unique_ptr<zigbee::RadioOwner> g_owner;   // only the bridge's task touches it
 std::atomic<bool> g_local{false};
+std::mutex g_watch_lock;
+zigbee::BridgeWatch g_watch;       // under g_watch_lock: what Zigbee2MQTT said about itself (core/z2m_watch.hpp)
+bool g_watch_enabled = false;      // set once, before the broker link starts
 
 std::uint64_t now_ms() { return static_cast<std::uint64_t>(esp_timer_get_time()) / 1000ULL; }
 
@@ -273,7 +277,12 @@ static void network_task(void*) {
   for (;;) {
     const std::uint64_t now = now_ms();
     // "the client is connected" is, here, the server being reachable: while it is, Zigbee2MQTT is the one that talks to the coordinator
-    const bool mine = g_owner->update(mqtt_link::connected(), now) == zigbee::RadioOwner::Owner::kNode;
+    bool server_has_radio;
+    {
+      std::lock_guard<std::mutex> guard(g_watch_lock);
+      server_has_radio = g_watch.server_has_radio(g_watch_enabled, mqtt_link::connected());   // with the watch on, Zigbee2MQTT being offline counts even while the broker is up
+    }
+    const bool mine = g_owner->update(server_has_radio, now) == zigbee::RadioOwner::Owner::kNode;
     if (!mine && (sock >= 0 || g_local.load())) let_go("the server is back");
     if (mine && sock < 0 && now >= retry_at) {
       sock = connect_to(host, g_setting.network_port);
@@ -297,6 +306,19 @@ static void network_task(void*) {
     }
     vTaskDelay(pdMS_TO_TICKS(20));
   }
+}
+
+void listen_for_server(const config::IoSettings& settings, const std::string& topic) {
+  if (topic.empty() || settings.zigbee.network_host.empty() || settings.zigbee.enabled || !zigbee::valid_bridge_topic(topic)) return;
+  g_watch_enabled = true;
+  mqtt_link::subscribe(topic, [](const std::string&, const std::string& payload) {
+    std::lock_guard<std::mutex> guard(g_watch_lock);
+    g_watch.set_state(zigbee::parse_bridge_state(payload));
+  }, []() {
+    std::lock_guard<std::mutex> guard(g_watch_lock);
+    g_watch.forget();   // a new connection: until the retained state arrives the node knows nothing, which counts as before (the server has the radio)
+  });
+  ESP_LOGI(kTag, "the state of Zigbee2MQTT is read from %s", topic.c_str());
 }
 
 void start_network(const config::IoSettings& settings) {

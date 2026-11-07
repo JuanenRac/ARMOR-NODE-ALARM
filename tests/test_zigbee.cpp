@@ -8,6 +8,7 @@
 #include "../core/alarm_runner.hpp"
 #include "../core/local_zigbee.hpp"
 #include "../core/radio_owner.hpp"
+#include "../core/z2m_watch.hpp"
 #include "../core/zigbee_ias.hpp"
 #include "../core/znp.hpp"
 
@@ -580,6 +581,65 @@ static void test_a_siren_that_was_away() {
   }
 }
 
+// The state Zigbee2MQTT publishes about itself, and who holds the radio with the watch on or off.
+static void test_bridge_watch() {
+  using zigbee::BridgeState;
+  CHECK(zigbee::parse_bridge_state("online") == BridgeState::kOnline && zigbee::parse_bridge_state("offline") == BridgeState::kOffline);
+  CHECK(zigbee::parse_bridge_state(" online\r\n") == BridgeState::kOnline && zigbee::parse_bridge_state("\toffline ") == BridgeState::kOffline);
+  CHECK(zigbee::parse_bridge_state("{\"state\":\"online\"}") == BridgeState::kOnline && zigbee::parse_bridge_state("{ \"state\" : \"offline\" }") == BridgeState::kOffline);
+  CHECK(zigbee::parse_bridge_state("") == BridgeState::kUnknown && zigbee::parse_bridge_state("Online") == BridgeState::kUnknown && zigbee::parse_bridge_state("online!") == BridgeState::kUnknown);
+  CHECK(zigbee::parse_bridge_state("{}") == BridgeState::kUnknown && zigbee::parse_bridge_state("{\"state\":5}") == BridgeState::kUnknown && zigbee::parse_bridge_state("{\"state\":\"gone\"}") == BridgeState::kUnknown);
+  CHECK(zigbee::parse_bridge_state("{\"state\":\"online\",\"state\":\"offline\"}") == BridgeState::kUnknown);   // said twice: not trusted
+  CHECK(zigbee::parse_bridge_state("{\"other\":\"online\"}") == BridgeState::kUnknown && zigbee::parse_bridge_state("{\"state\"\"online\"}") == BridgeState::kUnknown);
+  // topics
+  CHECK(zigbee::valid_bridge_topic("zigbee2mqtt/bridge/state") && zigbee::valid_bridge_topic("z2m-house_1/bridge.state"));
+  CHECK(!zigbee::valid_bridge_topic("") && !zigbee::valid_bridge_topic("/a") && !zigbee::valid_bridge_topic("a/") && !zigbee::valid_bridge_topic("a//b") && !zigbee::valid_bridge_topic("a/#") && !zigbee::valid_bridge_topic("a/+/b"));
+  CHECK(!zigbee::valid_bridge_topic("a b") && !zigbee::valid_bridge_topic("a\nb") && !zigbee::valid_bridge_topic(std::string(129, 'a')) && zigbee::valid_bridge_topic(std::string(128, 'a')));
+  // who has the radio: with the watch off the broker's link decides, as it always did
+  zigbee::BridgeWatch watch;
+  CHECK(watch.server_has_radio(false, true) && !watch.server_has_radio(false, false));
+  watch.set_state(BridgeState::kOffline);
+  CHECK(watch.server_has_radio(false, true));                                 // off: what Zigbee2MQTT says is not looked at
+  CHECK(!watch.server_has_radio(true, true) && !watch.server_has_radio(true, false));   // on: Zigbee2MQTT offline while the broker is up -> the node may take the radio
+  watch.set_state(BridgeState::kOnline);
+  CHECK(watch.server_has_radio(true, true) && !watch.server_has_radio(true, false));    // online, but without the broker nobody has it
+  watch.forget();
+  CHECK(watch.state() == BridgeState::kUnknown && watch.server_has_radio(true, true));   // unknown counts as before: never earlier than the old behaviour
+  // with the owner: Zigbee2MQTT going offline hands the radio over after the time of the setting, and coming back takes it back at once
+  zigbee::RadioOwner owner(60000, 0);
+  watch.set_state(BridgeState::kOnline);
+  CHECK(owner.update(watch.server_has_radio(true, true), 1000) == zigbee::RadioOwner::Owner::kClient);
+  watch.set_state(BridgeState::kOffline);
+  CHECK(owner.update(watch.server_has_radio(true, true), 30000) == zigbee::RadioOwner::Owner::kClient);   // not long enough yet
+  CHECK(owner.update(watch.server_has_radio(true, true), 62000) == zigbee::RadioOwner::Owner::kNode);
+  watch.set_state(BridgeState::kOnline);
+  CHECK(owner.update(watch.server_has_radio(true, true), 63000) == zigbee::RadioOwner::Owner::kClient);
+}
+
+// The setting: empty by default, a plain topic, and only with a coordinator on the network.
+static void test_bridge_topic_setting() {
+  config::Settings s = valid_settings();
+  CHECK(s.zigbee_local.bridge_state_topic.empty());
+  s.zones[0].enabled = true; s.zones[0].id = "front-door"; s.zones[0].zigbee = "00158d0001a2b3c4"; s.zones[0].pin = -1;
+  s.panel.pin = "1234";
+  s.zigbee_local.after_s = 60;
+  s.zigbee.network_host = "192.168.0.201";
+  s.zigbee_local.bridge_state_topic = "zigbee2mqtt/bridge/state";
+  CHECK(config::validate(s).empty());
+  const std::string stored = config::to_json(s, true);
+  CHECK(stored.find("\"bridge_state_topic\":\"zigbee2mqtt/bridge/state\"") != std::string::npos);
+  config::Settings back; config::Problems problems;
+  CHECK(config::load(stored, config::default_settings("a1b2c3"), back, problems) && back.zigbee_local.bridge_state_topic == "zigbee2mqtt/bridge/state");
+  s.zigbee_local.bridge_state_topic = "bridge/#";
+  CHECK(has(config::validate(s), "zigbee_local.bridge_state_topic", "invalid"));
+  s.zigbee_local.bridge_state_topic = "zigbee2mqtt/bridge/state";
+  s.zigbee.network_host.clear(); s.zigbee_local.after_s = 0; s.zones[0].zigbee.clear(); s.zones[0].pin = 4;
+  CHECK(has(config::validate(s), "zigbee_local.bridge_state_topic", "needs_network"));
+  problems.clear();
+  CHECK(!config::load("{\"zigbee_local\":{\"bridge_state_topic\":5}}", s, back, problems) && has(problems, "zigbee_local.bridge_state_topic", "invalid"));
+  CHECK(config::to_json(config::default_settings("a1b2c3"), true).find("\"bridge_state_topic\":\"\"") != std::string::npos);   // off unless it says otherwise
+}
+
 int main() {
   test_a_siren_that_was_away();
   test_a_coordinator_that_is_already_running();
@@ -595,6 +655,8 @@ int main() {
   test_server_feed();
   test_network_coordinator_setting();
   test_silent_sensor();
+  test_bridge_watch();
+  test_bridge_topic_setting();
   std::printf("%d checks, %d failures\n", checks, failures);
   return failures == 0 ? 0 : 1;
 }

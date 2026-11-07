@@ -526,6 +526,7 @@ function zigbeePage() {
           el("div", { class: "row" }, field("zbFallback", "zigbee.fallback_client", { max: 15, placeholder: "192.168.0.60", hint: t("zbFallbackHint") }), field("zbFallbackAfter", "zigbee.fallback_after_s", { type: "number", min: 5, max: 600 }))] : null),
       cfg.enabled || cfg.network_host ? el("section", { class: "card" }, el("h2", {}, t("zbLocalTitle")), el("p", { class: "muted" }, t("zbLocalHint")),
         field("zbLocalAfter", "zigbee_local.after_s", { type: "number", min: 0, max: 3600 }),
+        cfg.network_host ? field("zbBridgeTopic", "zigbee_local.bridge_state_topic", { max: 128, placeholder: "zigbee2mqtt/bridge/state", hint: t("zbBridgeTopicHint") }) : null,
         el("label", { class: "field" }, el("span", {}, t("zbLocalSirens")), sirensArea())) : null,
       z.enabled ? el("section", { class: "card" }, el("h2", {}, t("zbStatus")),
         el("div", { class: "actions" }, el("span", { id: "zb-pill" }, zbPill(z.state)), el("span", { class: "muted", id: "zb-live" }, zbLiveText(z))),

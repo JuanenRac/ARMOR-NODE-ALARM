@@ -19,6 +19,7 @@
 #include "config_common.hpp"
 #include "io_config.hpp"
 #include "local_zigbee.hpp"
+#include "z2m_watch.hpp"
 #include "siren_loop.hpp"
 #include "node_settings.hpp"
 #include "stored_load.hpp"
@@ -56,6 +57,9 @@ struct ButtonSetting {
 // commands the sirens listed here (long addresses). It needs the radio's bridge (zigbee.enabled). Back to the server the moment its client connects again.
 struct ZigbeeLocal {
   int after_s = 0;
+  // With a coordinator on the network: the topic where Zigbee2MQTT publishes whether it is alive (zigbee2mqtt/bridge/state), so that the node takes the radio when Zigbee2MQTT is down even while
+  // the broker is up (core/z2m_watch.hpp). Empty (the default): the node's own link to the broker is the signal, as before. The broker's access list must let the node read it (mqtt_identity.sh alarm-z2m-state).
+  std::string bridge_state_topic;
   std::array<std::string, 4> sirens;
 };
 
@@ -202,6 +206,7 @@ inline void read_settings(const json::Value& document, Settings& s, Problems& pr
   }
   if (const json::Value* local = document.get("zigbee_local"); local != nullptr && local->is_object()) {
     read_int(*local, "after_s", s.zigbee_local.after_s, 0, 3600, "zigbee_local.after_s", problems);
+    read_text(*local, "bridge_state_topic", s.zigbee_local.bridge_state_topic, 128, "zigbee_local.bridge_state_topic", problems);
     if (const json::Value* sirens = local->get("sirens"); sirens != nullptr) {
       if (!sirens->is_array() || sirens->items.size() > s.zigbee_local.sirens.size()) bad(problems, "zigbee_local.sirens", "invalid");
       else {
@@ -310,6 +315,10 @@ inline Problems validate(const Settings& s) {
   // the radio the node may take over is the one on its board or a coordinator on the network
   const bool has_radio = s.zigbee.enabled || !s.zigbee.network_host.empty();
   if (s.zigbee_local.after_s != 0 && (s.zigbee_local.after_s < 10 || !has_radio)) bad(problems, "zigbee_local.after_s", has_radio ? "range" : "needs_zigbee");
+  if (!s.zigbee_local.bridge_state_topic.empty()) {
+    if (!zigbee::valid_bridge_topic(s.zigbee_local.bridge_state_topic)) bad(problems, "zigbee_local.bridge_state_topic", "invalid");
+    else if (s.zigbee.network_host.empty()) bad(problems, "zigbee_local.bridge_state_topic", "needs_network");
+  }
   for (std::size_t i = 0; i < s.zigbee_local.sirens.size(); ++i) {
     std::uint64_t ieee = 0;
     if (!s.zigbee_local.sirens[i].empty() && !zigbee::parse_ieee(s.zigbee_local.sirens[i], ieee)) bad(problems, "zigbee_local.sirens." + std::to_string(i), "invalid");
@@ -343,7 +352,7 @@ inline std::string to_json(const Settings& s, bool secrets) {
   w.key("server").begin_object().field("commands", s.server.commands).field("config_hash", to_text(s.server.config_hash)).field("zone_feed", to_text(s.server.zone_feed)).field("zone_signature", to_text(s.server.zone_signature)).field("disarm_pin", to_text(s.server.disarm_pin));
   if (secrets) w.field("zone_feed_key", s.server.zone_feed_key); else w.field("zone_feed_key_set", !s.server.zone_feed_key.empty());
   w.end_object();
-  w.key("zigbee_local").begin_object().field("after_s", s.zigbee_local.after_s).key("sirens").begin_array();
+  w.key("zigbee_local").begin_object().field("after_s", s.zigbee_local.after_s).field("bridge_state_topic", s.zigbee_local.bridge_state_topic).key("sirens").begin_array();
   for (const std::string& siren : s.zigbee_local.sirens) if (!siren.empty()) w.string(siren);
   w.end_array().end_object();
   io_write(w, s, secrets);
