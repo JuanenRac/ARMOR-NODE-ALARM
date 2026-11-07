@@ -147,6 +147,8 @@ static std::uint64_t bring_up(zigbee::LocalZigbee& z, std::uint64_t now) {
   CHECK(!z.ready());
   feed(z, frame_bytes(znp::Type::kSrsp, znp::sub::kZdo, 0x40, {0x00}), now += 20);   // 0: the network was restored
   CHECK(!z.ready());
+  frames = sent_by(z);
+  CHECK(frames.size() == 1 && frames[0].is(znp::Type::kSreq, znp::sub::kUtil, 0x00));   // it asks what state the device is in, in case nothing more is announced
   feed(z, frame_bytes(znp::Type::kAreq, znp::sub::kZdo, 0xC0, {0x09}), now += 300);  // the device is up as the coordinator
   CHECK(z.ready());
   return now;
@@ -187,6 +189,9 @@ static void test_conversation() {
   // the siren: unknown address, so nobody is told; after its answer, told to sound and to stop
   CHECK(z.siren(true, 60) == 0 && z.take_output().empty());
   feed(z, rsp(kSiren, 0x3456), now += 10);
+  // the siren was out of reach when the alarm began: told as soon as its address is learned, for the time that is left (60 s asked, 10 ms gone: 60 s)
+  auto late = sent_by(z);
+  CHECK(late.size() == 1 && late[0].is(znp::Type::kSreq, znp::sub::kAf, 0x01) && znp::get16(late[0].data, 0) == 0x3456 && late[0].data[13] == 0x17 && late[0].data[14] == 60 && late[0].data[15] == 0);
   CHECK(z.siren(true, 60) == 1);
   auto sound = sent_by(z);
   CHECK(sound.size() == 1 && sound[0].is(znp::Type::kSreq, znp::sub::kAf, 0x01) && znp::get16(sound[0].data, 0) == 0x3456 && znp::get16(sound[0].data, 4) == 0x0502 && sound[0].data[9] == 8 && sound[0].data[10] == 0x11 && sound[0].data[12] == 0x00 && sound[0].data[13] == 0x17);
@@ -432,7 +437,154 @@ static void test_silent_sensor() {
   CHECK(mute.zones()[0].silent && mute.panel().phase() == alarm::Phase::kAlarm);
 }
 
+// A coordinator that Zigbee2MQTT had already started says nothing more when it is asked to start again: it answers the request and announces no change of state. The node must not wait for
+// an announcement that never comes; it asks the device what it is.
+static Bytes device_info(std::uint8_t status, std::uint8_t device_state) {
+  Bytes d{status};
+  znp::put64(d, 0x00124B0001020304ULL);   // long address
+  znp::put16(d, 0x0000);                   // short address of the coordinator
+  d.push_back(0x07);                       // device type: coordinator + router + end device bits as the firmware reports them
+  d.push_back(device_state);
+  d.push_back(0x00);                       // associated devices
+  return frame_bytes(znp::Type::kSrsp, znp::sub::kUtil, 0x00, d);
+}
+
+static void to_wait_network(zigbee::LocalZigbee& z, std::uint64_t& now) {
+  z.begin(now);
+  sent_by(z);
+  feed(z, frame_bytes(znp::Type::kSrsp, znp::sub::kSys, 0x01, {0x79, 0x00}), now += 20);
+  sent_by(z);
+  feed(z, frame_bytes(znp::Type::kSrsp, znp::sub::kAf, 0x00, {0x00}), now += 20);
+  sent_by(z);
+  feed(z, frame_bytes(znp::Type::kSrsp, znp::sub::kZdo, 0x40, {0x00}), now += 20);
+  CHECK(z.state() == zigbee::LocalZigbee::State::kWaitNetwork);
+}
+
+static void test_a_coordinator_that_is_already_running() {
+  zigbee::LocalZigbee z({{"front-door", kDoor}}, {{kSiren}});
+  std::uint64_t now = 1000;
+  to_wait_network(z, now);
+  auto asked = sent_by(z);
+  CHECK(asked.size() == 1 && asked[0].is(znp::Type::kSreq, znp::sub::kUtil, 0x00) && asked[0].data.empty());
+  CHECK(znp::encode(znp::util_get_device_info()) == (Bytes{0xFE, 0x00, 0x27, 0x00, 0x27}));   // FE, no data, SREQ of UTIL (7): 0x20 | 7, command 0, checksum
+  // no announcement ever comes; the answer says "coordinator of a running network" (state 9): ready, without a change of state
+  feed(z, device_info(0, 9), now += 30);
+  CHECK(z.ready());
+  z.tick(now + 1);
+  CHECK(sent_by(z).size() == 2);   // and it goes on to ask the short address of the sensor and of the siren
+}
+
+static void test_the_state_of_the_device_is_read_as_it_is() {
+  std::uint64_t now = 1000;
+  // a device that is still starting (state 0 = hold, 2 = starting, 6 = joining...) is not ready; the state is asked again at the next step
+  for (const std::uint8_t state : {0, 1, 2, 3, 5, 6, 7, 8, 10, 255}) {
+    zigbee::LocalZigbee z({}, {});
+    to_wait_network(z, now);
+    sent_by(z);
+    feed(z, device_info(0, state), now += 10);
+    CHECK(!z.ready() && z.state() == zigbee::LocalZigbee::State::kWaitNetwork);
+  }
+  // an answer with an error status, or too short to hold the state, is never taken for a coordinator
+  zigbee::LocalZigbee bad({}, {});
+  to_wait_network(bad, now);
+  sent_by(bad);
+  feed(bad, device_info(1, 9), now += 10);
+  CHECK(!bad.ready());
+  feed(bad, frame_bytes(znp::Type::kSrsp, znp::sub::kUtil, 0x00, Bytes{0x00, 0x01, 0x02, 0x03}), now += 10);
+  feed(bad, frame_bytes(znp::Type::kSrsp, znp::sub::kUtil, 0x00, Bytes{}), now += 10);
+  CHECK(!bad.ready() && bad.state() == zigbee::LocalZigbee::State::kWaitNetwork);
+  // the same answer at any other time of the conversation moves nothing
+  zigbee::LocalZigbee early({}, {});
+  early.begin(now);
+  feed(early, device_info(0, 9), now += 10);
+  CHECK(!early.ready() && early.state() == zigbee::LocalZigbee::State::kPing);
+}
+
+static void test_waiting_for_the_network_asks_again_and_then_gives_up() {
+  zigbee::LocalZigbee z({}, {});
+  std::uint64_t now = 1000;
+  to_wait_network(z, now);
+  sent_by(z);
+  int asks = 1;
+  const std::uint64_t until = now + 60'000;
+  while (z.state() == zigbee::LocalZigbee::State::kWaitNetwork && now < until) {
+    now += 100;
+    z.tick(now);
+    for (const znp::Frame& f : sent_by(z)) if (f.is(znp::Type::kSreq, znp::sub::kUtil, 0x00)) ++asks;
+  }
+  CHECK(z.state() == zigbee::LocalZigbee::State::kFailed && asks == zigbee::LocalZigbee::kTries && z.failures() == 1);
+  // it then starts afresh, and a coordinator that answers at last is reached
+  z.tick(now + zigbee::LocalZigbee::kRetryAfterFailureMs);
+  CHECK(z.state() == zigbee::LocalZigbee::State::kPing);
+}
+
+// A siren that could not be told (its short address was not known) is told when it is learned, for what is left of the warning; never after the warning ended or was stopped.
+static void test_a_siren_that_was_away() {
+  const auto rsp = [&](std::uint64_t ieee, std::uint16_t addr) { Bytes d{0}; znp::put64(d, ieee); znp::put16(d, addr); d.push_back(0); d.push_back(0); return frame_bytes(znp::Type::kAreq, znp::sub::kZdo, 0x80, d); };
+  const auto duration = [](const znp::Frame& f) { return static_cast<unsigned>(f.data[14]) | (static_cast<unsigned>(f.data[15]) << 8); };
+  {   // 30 s asked, learned 20 s later: 10 s left
+    zigbee::LocalZigbee z({}, {{kSiren}});
+    std::uint64_t now = bring_up(z, 1000);
+    sent_by(z);
+    CHECK(z.siren(true, 30) == 0);
+    z.tick(now += 20'000);
+    sent_by(z);
+    feed(z, rsp(kSiren, 0x4444), now += 1);
+    const auto told = sent_by(z);
+    CHECK(told.size() == 1 && told[0].is(znp::Type::kSreq, znp::sub::kAf, 0x01) && znp::get16(told[0].data, 0) == 0x4444 && told[0].data[13] == 0x17 && duration(told[0]) == 10);
+    feed(z, rsp(kSiren, 0x4444), now += 1);   // the same answer again: the siren is already known, it is not told twice
+    CHECK(sent_by(z).empty());
+  }
+  {   // the warning ended before the siren was found: nothing is sent
+    zigbee::LocalZigbee z({}, {{kSiren}});
+    std::uint64_t now = bring_up(z, 1000);
+    sent_by(z);
+    CHECK(z.siren(true, 5) == 0);
+    z.tick(now += 5'000);
+    sent_by(z);
+    feed(z, rsp(kSiren, 0x4444), now += 1);
+    CHECK(sent_by(z).empty());
+  }
+  {   // the alarm was stopped before the siren was found: nothing is sent
+    zigbee::LocalZigbee z({}, {{kSiren}});
+    std::uint64_t now = bring_up(z, 1000);
+    sent_by(z);
+    CHECK(z.siren(true, 60) == 0);
+    CHECK(z.siren(false, 0) == 0);
+    feed(z, rsp(kSiren, 0x4444), now += 100);
+    CHECK(sent_by(z).empty());
+  }
+  {   // no end time: it sounds until it is stopped
+    zigbee::LocalZigbee z({}, {{kSiren}});
+    std::uint64_t now = bring_up(z, 1000);
+    sent_by(z);
+    CHECK(z.siren(true, 0) == 0);
+    z.tick(now += 3'600'000);
+    sent_by(z);
+    feed(z, rsp(kSiren, 0x4444), now += 1);
+    const auto told = sent_by(z);
+    CHECK(told.size() == 1 && duration(told[0]) == 0);
+  }
+  {   // the radio passes to the server before the siren is found: the wish is forgotten
+    zigbee::LocalZigbee z({}, {{kSiren}});
+    std::uint64_t now = bring_up(z, 1000);
+    sent_by(z);
+    CHECK(z.siren(true, 60) == 0);
+    z.end();
+    now = bring_up(z, now + 10);
+    sent_by(z);
+    z.tick(now += 10);
+    sent_by(z);
+    feed(z, rsp(kSiren, 0x4444), now += 1);
+    CHECK(sent_by(z).empty());
+  }
+}
+
 int main() {
+  test_a_siren_that_was_away();
+  test_a_coordinator_that_is_already_running();
+  test_the_state_of_the_device_is_read_as_it_is();
+  test_waiting_for_the_network_asks_again_and_then_gives_up();
   test_frames();
   test_clusters();
   test_conversation();

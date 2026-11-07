@@ -123,6 +123,8 @@ inline std::uint64_t get64(const std::vector<std::uint8_t>& data, std::size_t at
 
 // SYS_PING: is the coordinator there? Its answer carries the capabilities.
 inline Frame sys_ping() { return sreq(sub::kSys, 0x01); }
+// UTIL_GET_DEVICE_INFO: what state the device is in (the answer is an SRSP: status, long address, short address, device type, device state, ...). Device state 9 is the coordinator of a running network.
+inline Frame util_get_device_info() { return sreq(sub::kUtil, 0x00); }
 // AF_REGISTER: the panel's own endpoint (1), on the Home Automation profile, with the IAS Zone and IAS WD clusters as outputs (it receives from sensors and commands sirens).
 inline Frame af_register(std::uint8_t endpoint, std::uint16_t profile, std::uint16_t device_id, const std::vector<std::uint16_t>& in_clusters, const std::vector<std::uint16_t>& out_clusters) {
   std::vector<std::uint8_t> d{endpoint};

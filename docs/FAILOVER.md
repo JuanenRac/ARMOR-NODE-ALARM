@@ -19,6 +19,8 @@
 
 The simplest panel is the node: when the server's Zigbee2MQTT has not been connected to the bridge for the time set in the panel (*Take the radio after*), the node holds the radio itself and talks Zigbee to the coordinator (core/local_zigbee.hpp): it brings it up, reads the sensors of the zones that name one and commands the Zigbee sirens, feeding the same panel as the wired loops. The moment the server's client connects again the node lets go. This is written and tested against a stand-in coordinator; it has never run against a real one.
 
+A coordinator that Zigbee2MQTT had already started announces no change of state when the node asks it to start, so the node also asks it what state it is in (`UTIL_GET_DEVICE_INFO`) at every step and goes on as soon as it answers "coordinator of a running network". A siren whose short address is not known yet when the alarm begins is told as soon as the address is learned, for the time that is left of the warning (nothing is sent if the warning ended or was stopped). Both are covered by host tests; neither has talked to a real coordinator or siren.
+
 ## The relay: the panel takes the radio over
 
 The bridge accepts two clients: the **primary** (the server running Zigbee2MQTT) and the **fallback** (the panel). The fallback is accepted only while the primary is not connected and has been away for a configurable time (30 seconds by default); the primary may always connect and takes the radio back. This is built and tested in ARMOR-NODE-ELECTRICAL (`zigbee.fallback_client`, `zigbee.fallback_after_s`).

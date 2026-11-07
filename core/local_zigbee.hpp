@@ -44,7 +44,8 @@ class LocalZigbee {
  public:
   enum class State { kIdle, kPing, kRegister, kStartup, kWaitNetwork, kReady, kFailed };
   static constexpr std::uint8_t kEndpoint = 1;
-  static constexpr std::uint8_t kStateCoordinator = 9;   // ZDO_STATE_CHANGE_IND: the device is up as the network's coordinator
+  static constexpr std::uint8_t kStateCoordinator = 9;   // ZDO_STATE_CHANGE_IND, or the device state of UTIL_GET_DEVICE_INFO: the device is up as the network's coordinator
+  static constexpr std::size_t kDeviceStateOffset = 12;   // in the answer to UTIL_GET_DEVICE_INFO: status (1), long address (8), short address (2), device type (1), then the state
   static constexpr int kTries = 5;
   static constexpr std::uint64_t kStepMs = 3000, kRetryAfterFailureMs = 30'000, kLookupEveryMs = 10'000;
 
@@ -60,7 +61,7 @@ class LocalZigbee {
     send_step(State::kPing, now_ms);
   }
   // The radio is not ours any more: forget everything about the conversation (the next `begin` starts it afresh).
-  void end() { state_ = State::kIdle; out_.clear(); updates_.clear(); }
+  void end() { state_ = State::kIdle; out_.clear(); updates_.clear(); siren_wanted_ = false; }
 
   State state() const { return state_; }
   bool ready() const { return state_ == State::kReady; }
@@ -68,6 +69,7 @@ class LocalZigbee {
   // Bytes from the radio.
   void feed(const std::uint8_t* bytes, std::size_t count, std::uint64_t now_ms) {
     if (state_ == State::kIdle) return;
+    last_now_ms_ = now_ms;
     for (std::size_t i = 0; i < count; ++i) parser_.feed(bytes[i]);
     znp::Frame frame;
     while (parser_.pop(frame)) handle(frame, now_ms);
@@ -75,6 +77,7 @@ class LocalZigbee {
 
   // The clock: a step that got no answer is sent again, a coordinator that never answered is tried again after a pause, and the addresses of sensors and sirens not yet known are asked for.
   void tick(std::uint64_t now_ms) {
+    if (state_ != State::kIdle) last_now_ms_ = now_ms;
     switch (state_) {
       case State::kIdle: return;
       case State::kFailed:
@@ -93,14 +96,15 @@ class LocalZigbee {
   std::vector<std::uint8_t> take_output() { std::vector<std::uint8_t> out; out.swap(out_); return out; }
   std::vector<ZoneUpdate> take_updates() { std::vector<ZoneUpdate> out; out.swap(updates_); return out; }
 
-  // The sirens: sound (for `seconds`) or stop. Only a siren whose short address is known is told; the count says how many were.
+  // The sirens: sound (for `seconds`) or stop. Only a siren whose short address is known is told; the count says how many were. A siren whose address is not known yet is told as soon as it is
+  // learned, for the time that is left of the warning (a siren that was out of reach when the alarm began must not stay silent for good), unless the warning has ended or was stopped.
   std::size_t siren(bool on, std::uint16_t seconds) {
+    siren_wanted_ = on;
+    siren_until_ms_ = on && seconds != 0 ? last_now_ms_ + static_cast<std::uint64_t>(seconds) * 1000ULL : 0;
     std::size_t told = 0;
     for (const SirenDevice& s : sirens_) {
       if (s.short_address == 0) continue;
-      const std::uint8_t sequence = ++sequence_;
-      const std::vector<std::uint8_t> zcl = start_warning(sequence, on ? WarningMode::kBurglar : WarningMode::kStop, SirenLevel::kVeryHigh, on, seconds);
-      queue(znp::af_data_request(s.short_address, 1, kEndpoint, kClusterIasWd, sequence, zcl));
+      send_warning(s.short_address, on, seconds);
       ++told;
     }
     return told;
@@ -132,7 +136,8 @@ class LocalZigbee {
       case State::kPing: queue(znp::sys_ping()); break;
       case State::kRegister: queue(znp::af_register(kEndpoint, kProfileHomeAutomation, 0x0400, {}, {kClusterIasZone, kClusterIasWd})); break;
       case State::kStartup: queue(znp::zdo_startup_from_app(100)); break;
-      default: break;   // waiting for the network to say it is up: nothing to send
+      case State::kWaitNetwork: queue(znp::util_get_device_info()); break;   // a coordinator that is already running (Zigbee2MQTT started it) says nothing new when asked to start: ask what it is
+      default: break;
     }
   }
 
@@ -140,7 +145,11 @@ class LocalZigbee {
     if (frame.type == znp::Type::kSrsp) {
       if (state_ == State::kPing && frame.is(znp::Type::kSrsp, znp::sub::kSys, 0x01)) { send_step(State::kRegister, now_ms); return; }
       if (state_ == State::kRegister && frame.is(znp::Type::kSrsp, znp::sub::kAf, 0x00)) { send_step(State::kStartup, now_ms); return; }   // success or "already registered": either way it is ours
-      if (state_ == State::kStartup && frame.is(znp::Type::kSrsp, znp::sub::kZdo, 0x40)) { state_ = State::kWaitNetwork; step_at_ms_ = now_ms; tries_ = 0; return; }
+      if (state_ == State::kStartup && frame.is(znp::Type::kSrsp, znp::sub::kZdo, 0x40)) { state_ = State::kWaitNetwork; step_at_ms_ = now_ms; tries_ = 0; queue(znp::util_get_device_info()); return; }
+      if (state_ == State::kWaitNetwork && frame.is(znp::Type::kSrsp, znp::sub::kUtil, 0x00)) {
+        if (frame.data.size() > kDeviceStateOffset && frame.data[0] == 0 && frame.data[kDeviceStateOffset] == kStateCoordinator) { state_ = State::kReady; step_at_ms_ = now_ms; }
+        return;
+      }
       return;
     }
     if (frame.type != znp::Type::kAreq) return;
@@ -153,9 +162,24 @@ class LocalZigbee {
     if (const std::optional<Incoming> in = incoming_message(frame)) { incoming(*in); return; }
   }
 
+  void send_warning(std::uint16_t short_address, bool on, std::uint16_t seconds) {
+    const std::uint8_t sequence = ++sequence_;
+    const std::vector<std::uint8_t> zcl = start_warning(sequence, on ? WarningMode::kBurglar : WarningMode::kStop, SirenLevel::kVeryHigh, on, seconds);
+    queue(znp::af_data_request(short_address, 1, kEndpoint, kClusterIasWd, sequence, zcl));
+  }
+
   void learn(std::uint16_t short_address, std::uint64_t ieee) {
     for (SensorDevice& s : sensors_) if (s.config.ieee == ieee) s.device.short_address = short_address;
-    for (SirenDevice& s : sirens_) if (s.ieee == ieee) s.short_address = short_address;
+    for (SirenDevice& s : sirens_) {
+      if (s.ieee != ieee) continue;
+      const bool was_unknown = s.short_address == 0;
+      s.short_address = short_address;
+      if (!was_unknown || !siren_wanted_) continue;
+      if (siren_until_ms_ == 0) { send_warning(short_address, true, 0); continue; }   // no end time: sound until it is stopped
+      if (last_now_ms_ >= siren_until_ms_) { siren_wanted_ = false; continue; }      // the warning ended while the siren was away
+      const std::uint64_t left_ms = siren_until_ms_ - last_now_ms_;
+      send_warning(short_address, true, static_cast<std::uint16_t>((left_ms + 999) / 1000));   // what is left, rounded up to whole seconds
+    }
   }
 
   void incoming(const Incoming& in) {
@@ -198,6 +222,9 @@ class LocalZigbee {
   int tries_ = 0;
   std::uint64_t step_at_ms_ = 0;
   std::uint8_t sequence_ = 0;
+  std::uint64_t last_now_ms_ = 0;
+  bool siren_wanted_ = false;
+  std::uint64_t siren_until_ms_ = 0;   // 0: no end (or nothing wanted)
   std::uint32_t failures_ = 0, reports_ = 0;
   znp::Parser parser_;
   std::vector<SensorDevice> sensors_;
