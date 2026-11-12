@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **More of the shared rules and of the wiring are tried:** the shared test program covers the diagnostic package, the release signature text, the topics and the Bluetooth frames branch by branch, and the wiring test tries every combination of the topics the node listens to; the floor of the branch coverage goes from 87.1 % to 88.0 % (measured 88.5 %).
+
 - **A floor for the test coverage of `core/`:** the workflow `coverage-floor.yml` builds the host tests with gcov counters, runs them and fails when the lines or the branches they execute fall below `docs/coverage_threshold.json` (floor: lines 97.6, branches 87.1; measured 98.1 and 87.6). Raising it is a change of that file with a figure measured by a run of the workflow.
 
 - **More tests of the rules the nodes share:** `tests/test_shared_more.cpp` (the same file in every node) tries the words of the health report and each optional part of it, and has the generated reader of the contract accept and write back a full report; the report of a dirty start (every cause, the guard's records, the out-of-memory and the last look before a crash); the reading of the settings kept in flash (a field that cannot be accepted is left out, the rest is kept); and the operations of the Bluetooth channel with a stand-in for the radio and the storage (who may ask what, the set-up, the throttle on wrong passwords per phone and for all of them).

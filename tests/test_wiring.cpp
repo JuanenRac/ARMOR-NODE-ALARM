@@ -3,6 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D). GPL-3.0-or-later.
 #include <cstdio>
 #include <string>
+#include <vector>
 
 #include "../core/alarm_wiring.hpp"
 
@@ -162,6 +163,27 @@ static void test_the_wiring_agrees_with_the_settings_check() {
   CHECK(problem(s, "server.commands"));
 }
 
+// Every combination of what the node listens to, and the words for how a zone is read.
+static void test_topics_by_flag_and_words() {
+  using namespace armor::alarm;
+  for (int mask = 0; mask < 8; ++mask) {
+    Wiring wiring;
+    wiring.listens_zone_feed = (mask & 1) != 0;
+    wiring.listens_policy = (mask & 2) != 0;
+    wiring.listens_command = (mask & 4) != 0;
+    const std::vector<std::string> topics = wiring.topics("alarm-1");
+    CHECK(topics.size() == static_cast<std::size_t>(((mask & 1) ? 1 : 0) + ((mask & 2) ? 1 : 0) + ((mask & 4) ? 1 : 0)));
+    std::size_t at = 0;
+    if (mask & 1) CHECK(topics[at++] == topic("alarm-1", "zigbee"));
+    if (mask & 2) CHECK(topics[at++] == topic("alarm-1", "policy"));
+    if (mask & 4) CHECK(topics[at++] == topic("alarm-1", "command"));
+  }
+  CHECK(std::string(to_text(ZoneInput::kOff)) == "off" && std::string(to_text(ZoneInput::kAnalogLoop)) == "loop");
+  CHECK(std::string(to_text(ZoneInput::kDigital)) == "digital" && std::string(to_text(ZoneInput::kZigbee)) == "zigbee");
+  Wiring none;
+  CHECK(none.zones_read(ZoneInput::kOff) == config::kZoneCount && none.zones_read(ZoneInput::kDigital) == 0);
+}
+
 int main() {
   test_nothing_configured();
   test_how_a_zone_is_read();
@@ -170,6 +192,7 @@ int main() {
   test_the_topics();
   test_the_siren_relay();
   test_the_wiring_agrees_with_the_settings_check();
+  test_topics_by_flag_and_words();
   std::printf("%d checks, %d failures\n", checks, failures);
   return failures == 0 ? 0 : 1;
 }
