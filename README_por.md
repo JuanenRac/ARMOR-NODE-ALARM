@@ -22,7 +22,7 @@
   <img src="https://img.shields.io/badge/Language-C%2B%2B17-00599c.svg" alt="Language">
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
-  <img src="https://img.shields.io/badge/Tests-496974%20checks-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-497057%20checks-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.5.5-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
 </p>
@@ -41,7 +41,7 @@
 | Maturidade | Funcional |
 | Função | Nó de campo central de alarme para ESP32-S3 (família: Field Nodes, pai: ARMOR-COMMON) |
 | Tecnologia | C++17, ESP-IDF 5.5.5, ESP32-S3 |
-| Testes | 496974 verificações em 26 programas de anfitrião e 6 em Python (`ctest`) |
+| Testes | 497057 verificações em 26 programas de anfitrião e 6 em Python (`ctest`) |
 | Entradas | Até 8 laços cablados, sensores Zigbee (IAS Zone) e sirene (IAS WD), 4 botões |
 | Funciona em | Uma placa ESP32-S3 (Ethernet ou Wi-Fi) com a placa base; testes de anfitrião em qualquer computador |
 | Em hardware real | Nenhum ainda: nenhuma placa, zona, sirene ou coordenador Zigbee ligados (só testes no computador, a compilação e o painel num navegador) |
@@ -202,7 +202,7 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 python -I tools/armor_ci_validate.py
 ```
 
-26 programas de teste de anfitrião e 6 verificações Python correm com `ctest`; 496974 verificações contadas pelos programas de anfitrião, compiladas com `-Werror`.
+26 programas de teste de anfitrião e 6 verificações Python correm com `ctest`; 497057 verificações contadas pelos programas de anfitrião, compiladas com `-Werror`.
 
 Verificações Python: os textos do painel em oito línguas, as tarefas, os caminhos de gravação, a sessão Bluetooth sob o seu bloqueio e as rotas que o painel chama (e, em alguns nós, os códigos HTTP ou os glifos dos tipos de letra)
 

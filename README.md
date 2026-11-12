@@ -22,7 +22,7 @@
   <img src="https://img.shields.io/badge/Language-C%2B%2B17-00599c.svg" alt="Language">
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
-  <img src="https://img.shields.io/badge/Tests-496974%20checks-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-497057%20checks-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.5.5-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
 </p>
@@ -41,7 +41,7 @@
 | Maturity | Functional |
 | Role | Alarm panel field node for ESP32-S3 (family: Field Nodes, parent: ARMOR-COMMON) |
 | Stack | C++17, ESP-IDF 5.5.5, ESP32-S3 |
-| Tests | 496974 checks in 26 host programs and 6 Python checks (`ctest`) |
+| Tests | 497057 checks in 26 host programs and 6 Python checks (`ctest`) |
 | Inputs | Up to 8 wired loops, Zigbee sensors (IAS Zone) and siren (IAS WD), 4 buttons |
 | Runs on | An ESP32-S3 board (Ethernet or Wi-Fi) with the base board; host tests on any computer |
 | On real hardware | None yet: no board, zone, siren or Zigbee coordinator connected (host tests, the build and the panel in a browser only) |
@@ -202,7 +202,7 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 python -I tools/armor_ci_validate.py
 ```
 
-26 host test programs and 6 Python checks run under `ctest`; 496974 checks counted by the host programs, built with `-Werror`.
+26 host test programs and 6 Python checks run under `ctest`; 497057 checks counted by the host programs, built with `-Werror`.
 
 Python checks: the panel texts in eight languages, the tasks, the save paths, the Bluetooth session under its lock and the routes the panel calls (and, in some nodes, the HTTP codes or the glyphs of the fonts)
 
