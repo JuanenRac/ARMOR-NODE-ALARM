@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The shared wire header knows the field `challenge` of the voice turn result:** the generated `core/armor_wire.hpp` (copied from ARMOR-COMMON) describes the optional number of two to six digits that the voice service sends in the mode `challenge` of its silence confirmation. This node does not use it; the copy only follows the contract.
+
 - **The log hook no longer takes 224 bytes of the stack of every task that logs:** the line is formatted into one static buffer shared by all the tasks (tried, never waited for, with a small buffer on the stack as the way out), so the tasks with 3 KiB of stack have room and the lines of the panel's log are cut at 383 characters instead of 223. The rule of what is kept is `core/log_line.hpp`, host-tested.
 
 - **The node can tell that Zigbee2MQTT is down while the broker is up:** with a coordinator on the network, `zigbee_local.bridge_state_topic` (empty by default: nothing changes) names the retained state topic of Zigbee2MQTT; an `offline` counts as the server being away, so the node takes the radio after the usual time, and `online` gives it back. Unknown (nothing received yet, or just reconnected) counts as before. The panel has the field in eight languages, the broker's access list needs `mqtt_identity.sh alarm-z2m-state` (off by default). Pure rule in `core/z2m_watch.hpp` with host tests for the payloads, the topics, the owner and the setting.
