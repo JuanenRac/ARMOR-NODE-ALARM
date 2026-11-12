@@ -22,7 +22,7 @@
   <img src="https://img.shields.io/badge/Language-C%2B%2B17-00599c.svg" alt="Sprache">
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
-  <img src="https://img.shields.io/badge/Tests-511647%20checks-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-511945%20checks-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.5.5-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Reifegrad">
 </p>
@@ -41,7 +41,7 @@
 | Reifegrad | Funktionsfähig |
 | Rolle | Alarmzentralen-Feldknoten für ESP32-S3 (Familie: Field Nodes, übergeordnet: ARMOR-COMMON) |
 | Technik | C++17, ESP-IDF 5.5.5, ESP32-S3 |
-| Tests | 511647 Prüfungen in 26 Host-Programmen und 6 Python-Prüfungen (`ctest`) |
+| Tests | 511945 Prüfungen in 26 Host-Programmen und 6 Python-Prüfungen (`ctest`) |
 | Eingänge | Bis zu 8 verdrahtete Schleifen, Zigbee-Sensoren (IAS Zone) und Sirene (IAS WD), 4 Tasten |
 | Läuft auf | Eine ESP32-S3-Platine (Ethernet oder WLAN) mit Basisplatine; Host-Tests auf jedem Computer |
 | Auf echter Hardware | Noch keiner: keine Platine, Zone, Sirene oder kein Zigbee-Koordinator angeschlossen (nur Computertests, der Build und das Panel im Browser) |
@@ -202,7 +202,7 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 python -I tools/armor_ci_validate.py
 ```
 
-26 Host-Testprogramme und 6 Python-Prüfungen laufen unter `ctest`; 511647 Prüfungen, gezählt von den Host-Programmen, mit `-Werror` gebaut.
+26 Host-Testprogramme und 6 Python-Prüfungen laufen unter `ctest`; 511945 Prüfungen, gezählt von den Host-Programmen, mit `-Werror` gebaut.
 
 Python-Prüfungen: die Panel-Texte in acht Sprachen, die Tasks, die Speicherpfade, die Bluetooth-Sitzung unter ihrer Sperre und die vom Panel aufgerufenen Routen (und in manchen Knoten die HTTP-Codes oder die Glyphen der Schriften)
 

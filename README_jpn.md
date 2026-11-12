@@ -22,7 +22,7 @@
   <img src="https://img.shields.io/badge/Language-C%2B%2B17-00599c.svg" alt="Language">
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
-  <img src="https://img.shields.io/badge/Tests-511647%20checks-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-511945%20checks-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.5.5-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
 </p>
@@ -41,7 +41,7 @@
 | 成熟度 | 機能する |
 | 役割 | ESP32-S3 用アラームパネルのフィールドノード（ファミリー：Field Nodes、親：ARMOR-COMMON） |
 | 技術 | C++17, ESP-IDF 5.5.5, ESP32-S3 |
-| テスト | 511647 件の検査（ホスト用プログラム 26 本と Python 検査 6 個、`ctest`） |
+| テスト | 511945 件の検査（ホスト用プログラム 26 本と Python 検査 6 個、`ctest`） |
 | 入力 | 最大 8 本の配線ループ、Zigbee センサー（IAS Zone）とサイレン（IAS WD）、ボタン 4 個 |
 | 動作環境 | ベース基板付きの ESP32-S3 基板（Ethernet または Wi-Fi）、ホストテストは任意のコンピューター |
 | 実機での確認 | まだありません：基板、警戒区域、サイレン、Zigbee コーディネーターはいずれも未接続（コンピューター上のテスト、ビルド、ブラウザーでのパネルのみ） |
@@ -202,7 +202,7 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 python -I tools/armor_ci_validate.py
 ```
 
-ホスト用テストプログラム 26 個と Python の検査 6 個を `ctest` で実行します。ホストのプログラムが数えた検査は 511647 件で、`-Werror` でビルドします。
+ホスト用テストプログラム 26 個と Python の検査 6 個を `ctest` で実行します。ホストのプログラムが数えた検査は 511945 件で、`-Werror` でビルドします。
 
 Python の検査：8 言語のパネル文言、タスク、保存パス、ロック下の Bluetooth セッション、パネルが呼ぶルート（ノードによっては HTTP コードやフォントのグリフも）
 
