@@ -3,6 +3,7 @@
 // Nothing here has run on a real installation: the zones are stand-ins and the clock is a number the test moves.
 #include <cstdio>
 #include <cstdint>
+#include <memory>
 #include <random>
 #include <string>
 #include <vector>
@@ -388,6 +389,58 @@ static void test_random() {
   }
 }
 
+// ---- power cuts at random moments --------------------------------------------------------------------------------------------------------
+
+// The power goes at a random moment of a long random run (about one step in twelve): what the node wrote to flash is read back through its text form into a new panel, and what a restart must
+// not forget holds every time: an armed house stays armed in the same mode, an alarm stays an alarm (a silenced siren does not come back louder), a disarmed quiet house stays quiet, and a
+// lockout that was running is still there.
+static void test_random_power_cuts() {
+  std::mt19937 rng(777);
+  const char* ids[] = {"front-door", "window", "hall-motion", "smoke"};
+  int cuts = 0, armed_cuts = 0, alarm_cuts = 0;
+  for (int round = 0; round < 40; ++round) {
+    const Timing t = quick();
+    std::unique_ptr<Panel> p(new Panel(t, house(), "4321"));
+    std::uint64_t now = 0;
+    for (int step = 0; step < 1500; ++step) {
+      now += rng() % 3000;
+      switch (rng() % 8) {
+        case 0: case 1: p->set_zone(ids[rng() % 4], static_cast<ZoneState>(rng() % 3), now); break;
+        case 2: p->arm(static_cast<Mode>(1 + rng() % 2), rng() % 2 == 0, now); break;
+        case 3: p->disarm(rng() % 3 == 0 ? "4321" : "0000", now); break;
+        default: break;
+      }
+      p->tick(now);
+      if (rng() % 12 != 0) continue;
+      ++cuts;
+      const Phase phase = p->phase();
+      const Mode mode = p->mode();
+      const bool siren = p->siren();
+      const bool locked = p->locked_out(now);
+      const Panel::Saved saved = p->saved();
+      Panel::Saved read;
+      CHECK(parse_saved(saved_text(saved), read) && read == saved);   // what is written to flash reads back exactly
+      now += 1 + rng() % 5000;                                          // the node is off for a while
+      std::unique_ptr<Panel> back(new Panel(t, house(), "4321"));
+      back->restore(read, now);
+      if (phase == Phase::kAlarm || phase == Phase::kEntryDelay) {
+        ++alarm_cuts;
+        CHECK(back->phase() == Phase::kAlarm);                          // an alarm (or an entry delay, which a restart turns into one) is still an alarm
+        if (phase == Phase::kAlarm && !siren) CHECK(!back->siren());    // a silenced siren does not come back louder
+        if (mode != Mode::kDisarmed) CHECK(back->mode() == mode);
+      } else if (phase == Phase::kArmed || phase == Phase::kExitDelay) {
+        ++armed_cuts;
+        CHECK(back->phase() == Phase::kArmed && back->mode() == mode && !back->siren());   // armed stays armed, in the same mode, quietly
+      } else {
+        CHECK(back->phase() == Phase::kDisarmed && !back->siren() && back->mode() == Mode::kDisarmed);   // a quiet disarmed house stays quiet
+      }
+      if (locked) CHECK(back->locked_out(now));                         // a running lockout comes back
+      p = std::move(back);
+    }
+  }
+  CHECK(cuts > 1000 && armed_cuts > 100 && alarm_cuts > 100);           // the run really cuts the power in every kind of state
+}
+
 // ---- what a restart must not forget; sabotage that cannot be left out ----------------------------------------------------------------------
 
 static void test_restart_and_tamper() {
@@ -516,6 +569,7 @@ int main() {
   test_silence_counts_wrong_pins();
   test_zero_delays_and_log();
   test_restart_and_tamper();
+  test_random_power_cuts();
   test_resound_and_restore_more();
   test_random();
   std::printf("%d checks, %d failures\n", checks, failures);
