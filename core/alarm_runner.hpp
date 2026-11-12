@@ -226,6 +226,8 @@ class Runner {
   void set_epoch(std::int64_t epoch) { panel_.set_epoch(epoch); }
   void restore_events(std::vector<Event> older) { panel_.restore_events(std::move(older)); }
   bool siren() const { return panel_.siren(); }
+  bool siren_fire() const { return panel_.siren_fire(); }
+  std::uint32_t siren_seconds_left(std::uint64_t now_ms) const { return panel_.siren_seconds_left(now_ms); }
   const Panel& panel() const { return panel_; }
   const std::array<ZoneView, config::kZoneCount>& zones() const { return views_; }
   bool locked_out(std::uint64_t now_ms) const { return panel_.locked_out(now_ms); }

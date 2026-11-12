@@ -74,6 +74,18 @@ class Panel {
   Phase phase() const { return phase_; }
   Mode mode() const { return mode_; }
   bool siren() const { return siren_on_; }
+  // Whether the alarm that is sounding came (also) from an always-on zone (smoke, gas, flood, panic): a Zigbee siren is then told the fire sound, not the burglar one.
+  bool siren_fire() const {
+    for (const std::string& id : alarmed_) { const Slot* s = find(id); if (s != nullptr && s->zone.kind == ZoneKind::kAlways) return true; }
+    return false;
+  }
+  // Seconds of the siren that are left at `now_ms` (0 when it is not sounding or its time is used up): a radio that is handed to the node in the middle of an alarm must not sound for the full time again.
+  std::uint32_t siren_seconds_left(std::uint64_t now_ms) const {
+    if (!siren_on_ || phase_ != Phase::kAlarm) return 0;
+    const std::uint64_t total = static_cast<std::uint64_t>(timing_.siren_max_s) * 1000ULL;
+    const std::uint64_t used = now_ms > alarm_since_ms_ ? now_ms - alarm_since_ms_ : 0;
+    return used >= total ? 0 : static_cast<std::uint32_t>((total - used + 999) / 1000);
+  }
   bool locked_out(std::uint64_t now_ms) const { return locked_until_ms_ != 0 && now_ms < locked_until_ms_; }
   const std::vector<Event>& events() const { return events_; }
   // The wall-clock second now (0 while the node has no real time): the events noted from here on carry it, and the ones restored from flash are aged by it.

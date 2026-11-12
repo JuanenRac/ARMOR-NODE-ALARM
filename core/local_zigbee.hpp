@@ -98,8 +98,10 @@ class LocalZigbee {
 
   // The sirens: sound (for `seconds`) or stop. Only a siren whose short address is known is told; the count says how many were. A siren whose address is not known yet is told as soon as it is
   // learned, for the time that is left of the warning (a siren that was out of reach when the alarm began must not stay silent for good), unless the warning has ended or was stopped.
-  std::size_t siren(bool on, std::uint16_t seconds) {
+  // `mode` is the kind of warning the siren makes (a fire zone asks for the fire sound, anything else for the burglar one); a siren found late is told with the same one.
+  std::size_t siren(bool on, std::uint16_t seconds, WarningMode mode = WarningMode::kBurglar) {
     siren_wanted_ = on;
+    siren_mode_ = mode;
     siren_until_ms_ = on && seconds != 0 ? last_now_ms_ + static_cast<std::uint64_t>(seconds) * 1000ULL : 0;
     std::size_t told = 0;
     for (const SirenDevice& s : sirens_) {
@@ -164,7 +166,7 @@ class LocalZigbee {
 
   void send_warning(std::uint16_t short_address, bool on, std::uint16_t seconds) {
     const std::uint8_t sequence = ++sequence_;
-    const std::vector<std::uint8_t> zcl = start_warning(sequence, on ? WarningMode::kBurglar : WarningMode::kStop, SirenLevel::kVeryHigh, on, seconds);
+    const std::vector<std::uint8_t> zcl = start_warning(sequence, on ? siren_mode_ : WarningMode::kStop, SirenLevel::kVeryHigh, on, seconds);
     queue(znp::af_data_request(short_address, 1, kEndpoint, kClusterIasWd, sequence, zcl));
   }
 
@@ -224,6 +226,7 @@ class LocalZigbee {
   std::uint8_t sequence_ = 0;
   std::uint64_t last_now_ms_ = 0;
   bool siren_wanted_ = false;
+  WarningMode siren_mode_ = WarningMode::kBurglar;
   std::uint64_t siren_until_ms_ = 0;   // 0: no end (or nothing wanted)
   std::uint32_t failures_ = 0, reports_ = 0;
   znp::Parser parser_;

@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A Zigbee siren is told the kind of alarm and the time that is left:** an alarm that comes from an always-on zone (smoke, gas, flood, panic) makes the siren sound the fire warning instead of the burglar one, also for a siren that is found late, and a radio handed to the node in the middle of an alarm sounds only for the seconds that are left of the siren, not for the full time again. Host tests cover the kind, the time left (rounded up, zero when used up or timed out) and the stop.
 - **Waits before a retry and Improv over the cable are settings of the node, and the health report names the task with the least stack:** the settings gain `retry` (the first wait and the ceiling for a lost Wi-Fi network and for a lost broker, and the scatter; the defaults are the waits the firmware always used) and `improv.mode` (`setup`, the default, listens for a Wi-Fi network from an ESP Web Tools page only while the node has none stored; `always`; `off`), and the report to the server carries the optional `stack_min_free` and `stack_min_task`. Shared with the other nodes; host tests of the settings, of the rule for when Improv listens and of the report.
 
 ## [0.5.5] - The readers and writers of the messages are tried with every member of their contract: a new test program (`test_wire_full`, shared with the other nodes) reads and writes back, for every message, documents that hold every member the schema

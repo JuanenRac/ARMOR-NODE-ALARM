@@ -106,7 +106,7 @@ class ZigbeeHost : public zigbee_bridge::LocalHost {
   }
   std::vector<zigbee::ZoneUpdate> updates() { std::lock_guard<std::mutex> guard(m_); return z_.take_updates(); }
   bool ready() { std::lock_guard<std::mutex> guard(m_); return active_ && z_.ready(); }
-  void siren(bool on, unsigned seconds) { std::lock_guard<std::mutex> guard(m_); if (active_ && z_.ready()) z_.siren(on, static_cast<std::uint16_t>(seconds > 65535 ? 65535 : seconds)); }
+  void siren(bool on, unsigned seconds, bool fire) { std::lock_guard<std::mutex> guard(m_); if (active_ && z_.ready()) z_.siren(on, static_cast<std::uint16_t>(seconds > 65535 ? 65535 : seconds), fire ? zigbee::WarningMode::kFire : zigbee::WarningMode::kBurglar); }
 
  private:
   static std::vector<zigbee::SensorConfig> sensors_of(const config::Settings& s) {
@@ -262,7 +262,7 @@ void alarm_task(void*) {
       std::lock_guard<std::mutex> guard(g_lock);
       if (g_siren_relay >= 0) relay_outputs::siren(false);
       if (g_siren_on) { g_siren_on = false; ESP_LOGW(kTag, "the siren is off: the node's work is off"); }
-      if (g_host && g_host->ready() && g_zigbee_siren_told) { g_host->siren(false, g_settings.panel.timing.siren_max_s); g_zigbee_siren_told = false; }
+      if (g_host && g_host->ready() && g_zigbee_siren_told) { g_host->siren(false, g_settings.panel.timing.siren_max_s, false); g_zigbee_siren_told = false; }
       continue;
     }
     const std::uint64_t now = now_ms();
@@ -319,7 +319,7 @@ void alarm_task(void*) {
     if (g_host) {
       for (const zigbee::ZoneUpdate& update : g_host->updates()) g_sup->runner().feed_zigbee(update.zone_id, update.state, update.battery_low, now);
       if (!g_host->ready()) g_zigbee_siren_told = false;                    // a radio that is not ours cannot be told anything; it is told again when it is
-      else if (g_siren_on != g_zigbee_siren_told) { g_host->siren(g_siren_on, g_settings.panel.timing.siren_max_s); g_zigbee_siren_told = g_siren_on; }
+      else if (g_siren_on != g_zigbee_siren_told) { g_host->siren(g_siren_on, g_siren_on ? g_sup->runner().siren_seconds_left(now) : 0, g_sup->runner().siren_fire()); g_zigbee_siren_told = g_siren_on; }   // the time that is left and the kind of alarm, not the full time as a burglar
     }
     g_sup->runner().radio_held(g_host && g_host->ready(), now);
     g_sup->runner().tick(now);

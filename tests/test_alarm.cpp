@@ -263,6 +263,23 @@ static void test_siren_times_out() {
   CHECK(p.disarm("1234", 90000) == Refusal::kNone && p.phase() == Phase::kDisarmed);
 }
 
+// What a Zigbee siren is told: the kind of alarm (fire for an always-on zone, burglar otherwise) and the time that is left of the siren.
+static void test_siren_kind_and_time_left() {
+  Panel b(quick(), house(), "1234");
+  CHECK(!b.siren_fire() && b.siren_seconds_left(0) == 0);                       // nothing sounds
+  b.arm(Mode::kAway, false, 0); b.tick(11000);
+  b.set_zone("window", ZoneState::kTriggered, 20000);
+  CHECK(b.siren() && !b.siren_fire());                                          // a burglar alarm
+  CHECK(b.siren_seconds_left(20000) == 60 && b.siren_seconds_left(50000) == 30 && b.siren_seconds_left(50001) == 30);   // rounded up to whole seconds
+  CHECK(b.siren_seconds_left(79999) == 1 && b.siren_seconds_left(80000) == 0 && b.siren_seconds_left(900000) == 0);     // used up: nothing left
+  b.tick(80000);
+  CHECK(!b.siren() && b.siren_seconds_left(80000) == 0);                        // timed out
+  Panel f(quick(), house(), "1234");
+  f.set_zone("smoke", ZoneState::kTriggered, 1000);
+  CHECK(f.siren() && f.siren_fire() && f.siren_seconds_left(1000) == 60);       // smoke: the fire sound
+  CHECK(f.disarm("1234", 2000) == Refusal::kNone && !f.siren_fire() && f.siren_seconds_left(2000) == 0);
+}
+
 static void test_silence_keeps_the_alarm() {
   Panel p(quick(), house(), "1234");
   CHECK(p.silence("1234", 0) == Refusal::kNotArmed);                       // nothing is ringing
@@ -494,6 +511,7 @@ int main() {
   test_pin_and_lockout();
   test_lockout_grows_until_a_right_pin();
   test_siren_times_out();
+  test_siren_kind_and_time_left();
   test_silence_keeps_the_alarm();
   test_silence_counts_wrong_pins();
   test_zero_delays_and_log();

@@ -519,6 +519,24 @@ static void test_waiting_for_the_network_asks_again_and_then_gives_up() {
   CHECK(z.state() == zigbee::LocalZigbee::State::kPing);
 }
 
+// The kind of warning follows the alarm: the fire sound for an always-on zone, also for a siren that is found late; stopping is always the stop mode.
+static void test_siren_warning_kind() {
+  const auto rsp = [&](std::uint64_t ieee, std::uint16_t addr) { Bytes d{0}; znp::put64(d, ieee); znp::put16(d, addr); d.push_back(0); d.push_back(0); return frame_bytes(znp::Type::kAreq, znp::sub::kZdo, 0x80, d); };
+  zigbee::LocalZigbee z({}, {{kSiren}});
+  std::uint64_t now = bring_up(z, 1000);
+  sent_by(z);
+  CHECK(z.siren(true, 60, zigbee::WarningMode::kFire) == 0);                       // unknown address: remembered with its kind
+  feed(z, rsp(kSiren, 0x5555), now += 10);
+  const auto late = sent_by(z);
+  CHECK(late.size() == 1 && late[0].data[13] == 0x27);                             // fire (2 << 4) with the strobe and the very high level
+  CHECK(z.siren(false, 0) == 1);
+  const auto stop = sent_by(z);
+  CHECK(stop.size() == 1 && (stop[0].data[13] >> 4) == 0);                         // stop
+  CHECK(z.siren(true, 60) == 1);                                                   // the default is still the burglar sound
+  const auto burglar = sent_by(z);
+  CHECK(burglar.size() == 1 && burglar[0].data[13] == 0x17);
+}
+
 // A siren that could not be told (its short address was not known) is told when it is learned, for what is left of the warning; never after the warning ended or was stopped.
 static void test_a_siren_that_was_away() {
   const auto rsp = [&](std::uint64_t ieee, std::uint16_t addr) { Bytes d{0}; znp::put64(d, ieee); znp::put16(d, addr); d.push_back(0); d.push_back(0); return frame_bytes(znp::Type::kAreq, znp::sub::kZdo, 0x80, d); };
@@ -642,6 +660,7 @@ static void test_bridge_topic_setting() {
 
 int main() {
   test_a_siren_that_was_away();
+  test_siren_warning_kind();
   test_a_coordinator_that_is_already_running();
   test_the_state_of_the_device_is_read_as_it_is();
   test_waiting_for_the_network_asks_again_and_then_gives_up();
