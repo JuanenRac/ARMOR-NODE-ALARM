@@ -15,6 +15,7 @@
 #include "alarm_panel.hpp"
 #include "alarm_policy.hpp"
 #include "alarm_zone.hpp"
+#include "command_sig.hpp"
 #include "siren_loop.hpp"
 
 namespace armor::alarm {
@@ -40,6 +41,8 @@ struct ZoneView {
 // The answer to a command from the server.
 struct Reply {
   bool understood = false;   // false: not the contract's command, no answer is sent
+  bool signature_refused = false;   // the panel holds a command key and the command did not verify: no answer is sent (see `verdict`)
+  command_sig::Verdict verdict = command_sig::Verdict::kOk;
   Command command;
   Refusal refusal = Refusal::kNone;
 };
@@ -179,8 +182,13 @@ class Runner {
   unsigned feeds_refused() const { return feeds_refused_; }
 
   // From the server, as a message. A command that is not the contract's is not understood and gets no answer.
-  Reply handle(const std::string& text, std::uint64_t now_ms) {
+  // `wall_ms` is the real time in milliseconds since 1970 (0 while the node has none): with a command key the freshness of a command is checked against it.
+  Reply handle(const std::string& text, std::uint64_t now_ms, std::int64_t wall_ms = 0) {
     Reply reply;
+    if (settings_.server.commands && !settings_.server.command_key.empty()) {
+      reply.verdict = command_sig::verify(text, settings_.server.command_key, nonces_, wall_ms);
+      if (reply.verdict != command_sig::Verdict::kOk) { reply.signature_refused = true; return reply; }
+    }
     Command command;
     if (!settings_.server.commands || !parse_command(text, settings_.node_id, command)) return reply;
     reply.understood = true;
@@ -243,6 +251,7 @@ class Runner {
  private:
   Policy policy_;
   FeedVerdict last_feed_verdict_ = FeedVerdict::kAccepted;
+  command_sig::NonceCache nonces_;   // the nonces of the last signed commands that verified (a repeat is a replay)
   std::uint64_t last_feed_seq_ = 0;
   unsigned feeds_refused_ = 0;
   bool radio_ = false;
