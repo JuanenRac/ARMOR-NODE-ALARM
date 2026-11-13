@@ -29,6 +29,7 @@ const started = Date.now();
 let rebootAt = 0;
 let logText = "I (1200) armor-node: A.R.M.O.R. node armor-a1b2c3, firmware 0.2.3\nI (1500) armor-net: link up\nI (2600) armor-net: address 192.168.0.181, gateway 192.168.0.1, netmask 255.255.255.0 (wire)\nW (9000) armor-radar: radar 2: no data (RX not connected, no power or the wrong pin) (0 bytes, 0 frames, 0 bad)\n";
 
+const walk = { running: false, seen: [] };
 const config = {
   v: 1, node: { id: "alarm-a1b2c3", name: "House panel", hostname: "" },
   uplink: wired ? "ethernet" : "wifi", ip: { dhcp: true, address: "", netmask: "255.255.255.0", gateway: "", dns1: "", dns2: "" },
@@ -41,6 +42,8 @@ const config = {
   panel: { exit_delay_s: 10, entry_delay_s: 10, siren_max_s: 60, lockout_after: 3, lockout_s: 30, siren_relay: "siren", pin_set: true },
   server: { commands: false, config_hash: "policy", zone_feed: "policy", zone_signature: "policy", disarm_pin: "policy", zone_feed_key_set: false },
   zigbee_local: { bridge_state_topic: "", after_s: 0, sirens: [] },
+  walk_test: { enabled: false, seconds: 300 },
+  radio_watch: { enabled: false, silence_s: 600, min_sensors: 3, share_percent: 75, hold_s: 120 },
   zigbee: { enabled: true, rx: 18, tx: 17, reset: 21, bootloader: 47, baud: 115200, port: 8888, allowed_client: "192.168.0.180", fallback_client: "", fallback_after_s: 30 },
   remote: { relays: false, link_timeout_s: 0, http: false, token_set: false },
   relays: Array.from({ length: 8 }, (_, i) => ({ enabled: i < 2, name: ["siren", "lights"][i] ?? `relay${i + 1}`, label: ["Siren", "Hall lights"][i] ?? "", pin: wired ? [38, 39, 40, 41, 42, 43, 44, 48][i] : [38, 39, 40, 41, 42, 11, 12, 13][i], active_low: i === 1 , interlock: "" })),
@@ -249,6 +252,15 @@ const server = createServer(async (request, response) => {
     return json(response, 200, { ok: true });
   }
   if (method === "GET" && route === "io") return json(response, 200, io());
+  if (method === "GET" && route === "walk-test") return json(response, 200, { walk: { running: walk.running, seen: walk.seen, missing: config.zones.filter(z => z.enabled && !walk.seen.includes(config.zones.indexOf(z) + 1)).map(z => config.zones.indexOf(z) + 1) }, radio: config.radio_watch.enabled ? "healthy" : "off" });
+  if (method === "POST" && route === "walk-test") {
+    if (!needAdmin()) return;
+    if (body.action === "stop") { walk.running = false; return json(response, 200, { ok: true }); }
+    if (body.action !== "start") return json(response, 422, { error: "invalid" });
+    if (!config.walk_test.enabled || panelState.phase !== "disarmed") return json(response, 409, { error: "walk_not_available" });
+    walk.running = true; walk.seen = [1];
+    return json(response, 200, { ok: true });
+  }
   if (method === "POST" && route === "zigbee/radio") {
     if (!needAdmin()) return;
     if (!["reset", "bootloader"].includes(body.action)) return json(response, 422, { error: "invalid" });

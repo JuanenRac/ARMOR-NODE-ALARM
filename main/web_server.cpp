@@ -521,6 +521,29 @@ esp_err_t post_alarm_arm(httpd_req_t* r) {
   return send_ok(r);
 }
 
+// The walk test and the radio watch (core/walk_test.hpp, core/radio_watch.hpp): what they say now, and starting or stopping a walk.
+esp_err_t get_walk_test(httpd_req_t* r) {
+  Who who;
+  if (!require(r, who, true, false)) return ESP_OK;
+  return send_json(r, 200, std::string("{\"walk\":") + manager::walk_report() + ",\"radio\":\"" + manager::radio_verdict_text() + "\"}");
+}
+
+esp_err_t post_walk_test(httpd_req_t* r) {
+  Who who;
+  if (!require(r, who, true, true)) return ESP_OK;
+  json::Value in;
+  if (!read_json(r, in)) return ESP_OK;
+  const std::string action = in.string_or("action", "");
+  if (action == "stop") {
+    manager::walk_stop();
+    return send_ok(r);
+  }
+  if (action != "start") return send_error(r, 422, "invalid");
+  if (!manager::walk_start()) return send_error(r, 409, "walk_not_available");
+  ESP_LOGW(kTag, "walk test started by \"%s\"", who.user.c_str());
+  return send_ok(r);
+}
+
 // Disarms the panel or ends an alarm. Needs the PIN as well as a signed-in administrator: after a few wrong ones the panel refuses for a while.
 esp_err_t post_alarm_disarm(httpd_req_t* r) {
   Who who;
@@ -999,6 +1022,7 @@ esp_err_t api_handler(httpd_req_t* r) {
     if (route == "config/export") return get_config_export(r);
     if (route == "zones") return get_zones(r);
     if (route == "io") return get_io(r);
+    if (route == "walk-test") return get_walk_test(r);
     if (route == "users") return get_users(r);
     if (route == "ble-pin") return get_ble_pin(r);
     if (route == "log") return get_log(r);
@@ -1024,6 +1048,7 @@ esp_err_t api_handler(httpd_req_t* r) {
     if (route == "remote/relay") return post_remote_relay(r);
     if (route == "remote/alarm") return post_remote_alarm(r);
     if (route == "alarm/arm") return post_alarm_arm(r);
+    if (route == "walk-test") return post_walk_test(r);
     if (route == "alarm/disarm") return post_alarm_disarm(r);
     if (route == "alarm/silence") return post_alarm_silence(r);
     if (route == "zigbee/radio") return post_zigbee_radio(r);

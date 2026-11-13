@@ -436,6 +436,34 @@ alarm::Refusal silence(const std::string& pin) {
   return result;
 }
 
+bool walk_start() {
+  std::lock_guard<std::mutex> guard(g_lock);
+  return g_sup && g_sup->runner().start_walk_test(now_ms());
+}
+
+void walk_stop() {
+  std::lock_guard<std::mutex> guard(g_lock);
+  if (g_sup) g_sup->runner().stop_walk_test();
+}
+
+std::string walk_report() {
+  std::lock_guard<std::mutex> guard(g_lock);
+  return g_sup ? g_sup->runner().walk_test_report(now_ms()) : std::string("{\"running\":false,\"seen\":[],\"missing\":[]}");
+}
+
+std::string radio_verdict_text() {
+  std::lock_guard<std::mutex> guard(g_lock);
+  if (!g_sup) return "off";
+  switch (g_sup->runner().radio_verdict(now_ms())) {
+    case alarm::RadioVerdict::kTooFew: return "too_few";
+    case alarm::RadioVerdict::kHealthy: return "healthy";
+    case alarm::RadioVerdict::kWatching: return "watching";
+    case alarm::RadioVerdict::kSuspected: return "suspected";
+    case alarm::RadioVerdict::kOff: break;
+  }
+  return "off";
+}
+
 std::string error() { std::lock_guard<std::mutex> guard(g_lock); return g_error; }
 
 bool guarding() {
