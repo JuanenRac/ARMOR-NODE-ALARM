@@ -151,17 +151,26 @@ static void test_the_runner_takes_only_signed_commands_once_it_has_a_key() {
   }
 }
 
+// Whether the settings are refused because of the command key (the defaults of a node are refused for other reasons).
+static bool key_refused(const config::Settings& s) {
+  for (const config::Problem& problem : config::validate(s)) if (problem.path == "server.command_key") return true;
+  return false;
+}
+
 static void test_the_key_is_a_secret_of_the_settings() {
   config::Settings s = settings_with(kKey);
-  config::Settings stored;
-  config::Problems problems;
   const std::string shown = config::to_json(s, false);
   CHECK(shown.find(kKey) == std::string::npos && shown.find("\"command_key_set\":true") != std::string::npos);
-  const std::string kept = config::to_json(s, true);
-  CHECK(kept.find(std::string("\"command_key\":\"") + kKey + "\"") != std::string::npos);
-  CHECK(!config::load("{\"server\":{\"command_key\":\"abc\"}}", config::default_settings("a1b2c3"), stored, problems));
-  CHECK(!config::load(std::string("{\"server\":{\"command_key\":\"") + std::string(64, 'G') + "\"}}", config::default_settings("a1b2c3"), stored, problems));
-  CHECK(config::load(std::string("{\"server\":{\"commands\":false,\"command_key\":\"") + kKey + "\"}}", config::default_settings("a1b2c3"), stored, problems) && stored.server.command_key == kKey);
+  CHECK(config::to_json(s, true).find(std::string("\"command_key\":\"") + kKey + "\"") != std::string::npos);
+  CHECK(!key_refused(s));
+  s.server.command_key = "abc";
+  CHECK(key_refused(s));
+  s.server.command_key = std::string(64, 'G');
+  CHECK(key_refused(s));
+  s.server.command_key = std::string(64, 'A');
+  CHECK(key_refused(s));   // capitals are not the format
+  s.server.command_key.clear();
+  CHECK(!key_refused(s) && config::to_json(s, false).find("\"command_key_set\":false") != std::string::npos);
 }
 
 int main() {
