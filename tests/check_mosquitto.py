@@ -228,6 +228,12 @@ def start_broker(folder: Path, accounts: dict[str, str], acl: str) -> tuple[subp
     (folder / "mosquitto.conf").write_text(
         f"listener {port} 127.0.0.1\nallow_anonymous false\npassword_file {password_file.as_posix()}\nacl_file {(folder / 'acl').as_posix()}\npersistence false\nlog_dest file {(folder / 'broker.log').as_posix()}\n",
         encoding="utf-8")
+    # A broker installed from a distribution package can run under a security profile (AppArmor) that lets it read only its own folders, and then it cannot open the configuration of this test
+    # ("Unable to open config file"). A copy of the program in the test folder runs without that profile.
+    if sys.platform.startswith("linux"):
+        private = folder / "mosquitto-broker"
+        shutil.copy2(broker, private)
+        broker = str(private)
     errors = (folder / "broker.err").open("wb")
     process = subprocess.Popen([broker, "-c", str(folder / "mosquitto.conf")], stdout=subprocess.DEVNULL, stderr=errors)
     for _ in range(100):
