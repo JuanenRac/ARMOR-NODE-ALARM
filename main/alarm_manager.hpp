@@ -28,6 +28,13 @@ alarm::Refusal disarm(const std::string& pin);
 // Stops the siren with the system still armed: needs the PIN as well (a wrong one counts toward the lockout like a wrong disarm PIN).
 alarm::Refusal silence(const std::string& pin);
 
+// The walk test (core/walk_test.hpp): start (false when the setting is off or the panel is not disarmed), stop, and the report as JSON.
+bool walk_start();
+void walk_stop();
+std::string walk_report();
+// The suspicion of a jammed radio as a word: off, too_few, healthy, watching or suspected.
+std::string radio_verdict_text();
+
 // "" or why the zones are not being read ("adc": the converter could not be set up).
 std::string error();
 

@@ -508,6 +508,37 @@ function sirensArea() {
   return [area, bad ? el("span", { class: "err" }, problemText(S.problems[bad])) : null];
 }
 
+async function walkRefresh() {
+  const r = await api("GET", "walk-test");
+  S.walk = r.ok ? r.data : null;
+}
+
+async function walkAction(action) {
+  const r = await api("POST", "walk-test", { action });
+  S.message = r.ok ? null : { kind: "err", text: errorText(r.data.error) };
+  await walkRefresh(); render();
+}
+
+// The walk test and the radio watch: both off until the person turns them on.
+function walkCard() {
+  const cfg = S.cfg, w = S.walk && S.walk.walk;
+  return el("section", { class: "card" }, el("h2", {}, t("walkTitle")), el("p", { class: "muted" }, t("walkHint")),
+    field("walkEnabled", "walk_test.enabled", { type: "checkbox", rerender: true }),
+    cfg.walk_test.enabled ? [
+      field("walkSeconds", "walk_test.seconds", { type: "number", min: 60, max: 1800 }),
+      isAdmin() ? el("div", { class: "actions" },
+        el("button", { class: "b", onclick: () => walkAction("start") }, t("walkStart")),
+        el("button", { class: "b", onclick: () => walkAction("stop") }, t("walkStop")),
+        el("button", { class: "b", onclick: async () => { await walkRefresh(); render(); } }, t("walkRefresh"))) : null,
+      w ? el("p", { class: "muted", id: "walk-report" }, t(w.running ? "walkRunning" : "walkStopped"), " ", t("walkSeen", w.seen.join(", ") || "-"), " ", t("walkMissing", w.missing.join(", ") || "-")) : null] : null,
+    el("h2", {}, t("radioTitle")), el("p", { class: "muted" }, t("radioHint")),
+    field("radioEnabled", "radio_watch.enabled", { type: "checkbox", rerender: true }),
+    cfg.radio_watch.enabled ? [
+      el("div", { class: "row" }, field("radioSilence", "radio_watch.silence_s", { type: "number", min: 60, max: 86400 }), field("radioHold", "radio_watch.hold_s", { type: "number", min: 10, max: 3600 })),
+      el("div", { class: "row" }, field("radioMin", "radio_watch.min_sensors", { type: "number", min: 2, max: 8 }), field("radioShare", "radio_watch.share_percent", { type: "number", min: 50, max: 100 })),
+      S.walk ? el("p", { class: "muted", id: "radio-verdict" }, t("radio_verdict_" + S.walk.radio)) : null] : null);
+}
+
 function zigbeePage() {
   const z = zbStatus(), cfg = S.cfg.zigbee;
   const ip = S.status && S.status.network && S.status.network.ip;
@@ -536,6 +567,7 @@ function zigbeePage() {
           el("button", { class: "b", onclick: () => radioAction("reset") }, t("zbResetBtn")),
           z.has_bootloader ? el("button", { class: "b danger", onclick: () => radioAction("bootloader") }, t("zbBootBtn")) : null) : null,
         el("p", { class: "hint" }, t("zbBootHint"))) : null,
+      walkCard(),
       el("section", { class: "card" }, el("h2", {}, t("zbYamlTitle")), el("p", { class: "muted" }, t("zbYamlHint")),
         el("pre", { class: "code" }, "serial:\n  port: tcp://" + (ip || "<node>") + ":" + (cfg.port || 8888) + "\n  adapter: zstack"))));
 }
