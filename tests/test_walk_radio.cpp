@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "../core/alarm_config.hpp"
+#include "../core/alarm_runner.hpp"
 #include "../core/radio_watch.hpp"
 #include "../core/walk_test.hpp"
 
@@ -18,6 +20,7 @@ static int checks = 0;
     }                                                                                 \
   } while (0)
 
+using namespace armor;
 using namespace armor::alarm;
 
 static void test_walk_test() {
@@ -83,9 +86,67 @@ static void test_radio_watch() {
   CHECK(fresh.update(std::vector<std::uint64_t>(5, 7000000), 5000000, 7000000) == RadioVerdict::kHealthy);   // a heard time after the start is used as it is
 }
 
+static config::Settings three_sensors(bool walk, bool radio) {
+  config::Settings s = config::default_settings("a1b2c3");
+  s.node_id = "alarm-1";
+  for (std::size_t i = 0; i < 3; ++i) {
+    s.zones[i].enabled = true;
+    s.zones[i].id = "z" + std::to_string(i + 1);
+    s.zones[i].kind = ZoneKind::kInstant;
+    s.zones[i].zigbee = "00158d0001a2b3c" + std::to_string(i);
+    s.zones[i].pin = -1;
+  }
+  s.panel.pin = "1234";
+  s.walk_test.enabled = walk;
+  s.radio_watch.enabled = radio;
+  return s;
+}
+
+static void test_settings_and_runner() {
+  // off by default, and the values are read, checked and written back
+  config::Settings defaults = config::default_settings("a1b2c3");
+  CHECK(!defaults.walk_test.enabled && defaults.walk_test.seconds == 300 && !defaults.radio_watch.enabled && defaults.radio_watch.limits.share_percent == 75);
+  defaults.sta.enabled = true; defaults.sta.ssid = "casa"; defaults.sta.password = "una-clave-larga";
+  config::Settings out;
+  config::Problems problems;
+  CHECK(config::load(R"({"walk_test":{"enabled":true,"seconds":120},"radio_watch":{"enabled":true,"silence_s":300,"min_sensors":4,"share_percent":60,"hold_s":30}})", defaults, out, problems));
+  CHECK(out.walk_test.enabled && out.walk_test.seconds == 120 && out.radio_watch.enabled && out.radio_watch.limits.silence_s == 300 && out.radio_watch.limits.min_sensors == 4 &&
+        out.radio_watch.limits.share_percent == 60 && out.radio_watch.limits.hold_s == 30);
+  const std::string text = config::to_json(out, true);
+  CHECK(text.find(R"("walk_test":{"enabled":true,"seconds":120})") != std::string::npos && text.find(R"("share_percent":60)") != std::string::npos);
+  problems.clear();
+  CHECK(!config::load(R"({"walk_test":{"seconds":5}})", defaults, out, problems));
+  problems.clear();
+  CHECK(!config::load(R"({"radio_watch":{"share_percent":20}})", defaults, out, problems));
+
+  // a node whose switch is off never starts a walk
+  Runner off(three_sensors(false, false));
+  CHECK(!off.start_walk_test(1000) && !off.walk_test_running(1000));
+  CHECK(off.radio_verdict(5000000) == RadioVerdict::kOff);
+
+  // a walk: only with the panel disarmed, the zones that see the person are written down, arming ends it
+  Runner node(three_sensors(true, true));
+  CHECK(node.start_walk_test(1000) && node.walk_test_running(1000));
+  node.feed_zigbee("z1", ZoneState::kTriggered, false, 2000);
+  node.feed_zigbee("z2", ZoneState::kNormal, false, 3000);
+  node.feed_zigbee("z3", ZoneState::kTriggered, false, 4000);
+  CHECK(node.walk_test_report(5000) == "{\"running\":true,\"seen\":[1,3],\"missing\":[2]}");
+  CHECK(node.arm(Mode::kAway, true, 6000) == Refusal::kNone);
+  CHECK(!node.walk_test_running(6001));
+  CHECK(!node.start_walk_test(7000));   // armed: no walk
+  node.stop_walk_test();
+
+  // the radio: the sensors were heard, then none for a long time
+  for (std::size_t i = 1; i <= 3; ++i) node.feed_zigbee("z" + std::to_string(i), ZoneState::kNormal, false, 10000);
+  CHECK(node.radio_verdict(20000) == RadioVerdict::kHealthy);
+  CHECK(node.radio_verdict(10000 + 601000) == RadioVerdict::kWatching);
+  CHECK(node.radio_verdict(10000 + 601000 + 120000) == RadioVerdict::kSuspected);
+}
+
 int main() {
   test_walk_test();
   test_radio_watch();
+  test_settings_and_runner();
   std::printf("%d checks, %d failures\n", checks, failures);
   return failures == 0 ? 0 : 1;
 }

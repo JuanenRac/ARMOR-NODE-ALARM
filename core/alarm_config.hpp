@@ -20,7 +20,9 @@
 #include "io_config.hpp"
 #include "local_zigbee.hpp"
 #include "z2m_watch.hpp"
+#include "radio_watch.hpp"
 #include "siren_loop.hpp"
+#include "walk_test.hpp"
 #include "node_settings.hpp"
 #include "stored_load.hpp"
 
@@ -81,6 +83,18 @@ struct SirenLoopSetting {
   bool block_arming = false;
 };
 
+// The walk test (core/walk_test.hpp): a few minutes in which the installer walks through the house and the zones that see them are written down, with the panel disarmed. OFF by default.
+struct WalkTestSetting {
+  bool enabled = false;
+  int seconds = 300;   // how long one walk lasts, 60 to 1800
+};
+
+// The suspicion of a jammed radio (core/radio_watch.hpp): most of the Zigbee sensors quiet together for a while. OFF by default. The state message and the panel say so; nothing is armed or sounded by it.
+struct RadioWatchSetting {
+  bool enabled = false;
+  alarm::RadioWatchLimits limits;
+};
+
 // Whether the server may arm and disarm the panel by a command (armor/alarm/<node>/command). OFF by default: the panel then answers only to its own page. On, the broker's access list must
 // allow it too (ARMOR-DEVOPS, mqtt_identity.sh alarm-commands <node> on): both are needed, and the server has its own switch.
 //
@@ -114,6 +128,8 @@ struct Settings : NodeSettings, IoSettings {
   alarm::LoopLimits loop;
   PanelSetting panel;
   SirenLoopSetting siren_loop;
+  WalkTestSetting walk_test;
+  RadioWatchSetting radio_watch;
   ServerLink server;
   ZigbeeLocal zigbee_local;
 };
@@ -193,6 +209,18 @@ inline void read_settings(const json::Value& document, Settings& s, Problems& pr
     value = static_cast<int>(t.zigbee_silence_min); read_int(*panel, "zigbee_silence_min", value, 0, 1440, "panel.zigbee_silence_min", problems); t.zigbee_silence_min = static_cast<std::uint32_t>(value);
     read_secret(*panel, "pin", s.panel.pin, "panel.pin", problems);
     read_text(*panel, "siren_relay", s.panel.siren_relay, 32, "panel.siren_relay", problems);
+  }
+  if (const json::Value* walk = document.get("walk_test"); walk != nullptr && walk->is_object()) {
+    read_bool(*walk, "enabled", s.walk_test.enabled, "walk_test.enabled", problems);
+    read_int(*walk, "seconds", s.walk_test.seconds, 60, 1800, "walk_test.seconds", problems);
+  }
+  if (const json::Value* radio = document.get("radio_watch"); radio != nullptr && radio->is_object()) {
+    RadioWatchSetting& r = s.radio_watch;
+    read_bool(*radio, "enabled", r.enabled, "radio_watch.enabled", problems);
+    int value = static_cast<int>(r.limits.silence_s); read_int(*radio, "silence_s", value, 60, 86400, "radio_watch.silence_s", problems); r.limits.silence_s = static_cast<std::uint32_t>(value);
+    value = static_cast<int>(r.limits.min_sensors); read_int(*radio, "min_sensors", value, 2, 8, "radio_watch.min_sensors", problems); r.limits.min_sensors = static_cast<std::uint32_t>(value);
+    value = static_cast<int>(r.limits.share_percent); read_int(*radio, "share_percent", value, 50, 100, "radio_watch.share_percent", problems); r.limits.share_percent = static_cast<std::uint32_t>(value);
+    value = static_cast<int>(r.limits.hold_s); read_int(*radio, "hold_s", value, 10, 3600, "radio_watch.hold_s", problems); r.limits.hold_s = static_cast<std::uint32_t>(value);
   }
   if (const json::Value* siren = document.get("siren_loop"); siren != nullptr && siren->is_object()) {
     SirenLoopSetting& l = s.siren_loop;
@@ -352,6 +380,10 @@ inline std::string to_json(const Settings& s, bool secrets) {
   w.end_object();
   w.key("siren_loop").begin_object().field("enabled", s.siren_loop.enabled).field("pin", s.siren_loop.pin).key("short_below_mv").number(s.siren_loop.limits.short_below_mv).key("ok_below_mv").number(s.siren_loop.limits.ok_below_mv)
       .field("hold_ms", static_cast<long long>(s.siren_loop.timing.hold_ms)).field("clear_ms", static_cast<long long>(s.siren_loop.timing.clear_ms)).field("read_while_sounding", s.siren_loop.timing.read_while_sounding).field("block_arming", s.siren_loop.block_arming).end_object();
+  w.key("walk_test").begin_object().field("enabled", s.walk_test.enabled).field("seconds", s.walk_test.seconds).end_object();
+  w.key("radio_watch").begin_object().field("enabled", s.radio_watch.enabled).field("silence_s", static_cast<long long>(s.radio_watch.limits.silence_s))
+      .field("min_sensors", static_cast<long long>(s.radio_watch.limits.min_sensors)).field("share_percent", static_cast<long long>(s.radio_watch.limits.share_percent))
+      .field("hold_s", static_cast<long long>(s.radio_watch.limits.hold_s)).end_object();
   w.key("server").begin_object().field("commands", s.server.commands).field("config_hash", to_text(s.server.config_hash)).field("zone_feed", to_text(s.server.zone_feed)).field("zone_signature", to_text(s.server.zone_signature)).field("disarm_pin", to_text(s.server.disarm_pin));
   if (secrets) w.field("zone_feed_key", s.server.zone_feed_key); else w.field("zone_feed_key_set", !s.server.zone_feed_key.empty());
   if (secrets) w.field("command_key", s.server.command_key); else w.field("command_key_set", !s.server.command_key.empty());

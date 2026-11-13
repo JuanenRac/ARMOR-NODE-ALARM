@@ -15,6 +15,8 @@
 #include "alarm_panel.hpp"
 #include "alarm_policy.hpp"
 #include "alarm_zone.hpp"
+#include "radio_watch.hpp"
+#include "walk_test.hpp"
 #include "command_sig.hpp"
 #include "siren_loop.hpp"
 
@@ -51,7 +53,8 @@ class Runner {
  public:
   explicit Runner(const config::Settings& settings)
       : settings_(settings), panel_(settings.panel.timing, zones_of(settings), settings.panel.pin),
-        siren_loop_(settings.siren_loop.enabled, settings.siren_loop.limits, settings.siren_loop.timing) {
+        siren_loop_(settings.siren_loop.enabled, settings.siren_loop.limits, settings.siren_loop.timing),
+        walk_(settings.walk_test.enabled), radio_(settings.radio_watch.enabled, settings.radio_watch.limits) {
     for (std::size_t i = 0; i < config::kZoneCount; ++i) {
       ZoneView& view = views_[i];
       const config::ZoneSetting& zone = settings.zones[i];
@@ -69,6 +72,7 @@ class Runner {
     view.millivolts = millivolts;
     const ZoneState stable = filters_[index].feed(classify_loop(millivolts, settings_.loop), now_ms);
     view.state = stable;
+    note_walk(index, stable, now_ms);
     panel_.set_zone(view.id, stable, now_ms);
     view.bypassed = panel_.bypassed(view.id);
   }
@@ -102,6 +106,7 @@ class Runner {
     view.pin_high = pin_high;
     const ZoneState stable = filters_[index].feed(classify_contact(pin_high, zone.contact != "no", zone.role == "tamper"), now_ms);
     view.state = stable;
+    note_walk(index, stable, now_ms);
     panel_.set_zone(view.id, stable, now_ms);
     view.bypassed = panel_.bypassed(view.id);
   }
@@ -121,12 +126,14 @@ class Runner {
 
   // What a Zigbee sensor said (the node holds the radio): the state of its zone. An update for a zone that is not a Zigbee one is ignored.
   void feed_zigbee(const std::string& zone_id, ZoneState state, bool battery_low, std::uint64_t now_ms) {
-    for (ZoneView& view : views_) {
+    for (std::size_t slot = 0; slot < views_.size(); ++slot) {
+      ZoneView& view = views_[slot];
       if (!view.enabled || !view.zigbee || view.id != zone_id) continue;
       view.has_reading = true;
       view.heard_ms = now_ms;
       view.silent = false;
       view.state = state;
+      note_walk(slot, state, now_ms);
       view.battery_low = battery_low;
       panel_.set_zone(view.id, state, now_ms);
       view.bypassed = panel_.bypassed(view.id);
@@ -238,6 +245,23 @@ class Runner {
   std::uint32_t siren_seconds_left(std::uint64_t now_ms) const { return panel_.siren_seconds_left(now_ms); }
   const Panel& panel() const { return panel_; }
   const std::array<ZoneView, config::kZoneCount>& zones() const { return views_; }
+
+  // The walk test (core/walk_test.hpp): only with the panel disarmed, only when the setting allows it. Arming ends it.
+  bool start_walk_test(std::uint64_t now_ms) { return panel_.phase() == Phase::kDisarmed && walk_.start(now_ms, static_cast<std::uint32_t>(settings_.walk_test.seconds)); }
+  void stop_walk_test() { walk_.stop(); }
+  bool walk_test_running(std::uint64_t now_ms) const { return walk_.running(now_ms); }
+  std::string walk_test_report(std::uint64_t now_ms) const {
+    std::uint32_t enabled = 0;
+    for (std::size_t i = 0; i < views_.size(); ++i) if (views_[i].enabled) enabled |= 1u << i;
+    return walk_.report(now_ms, enabled);
+  }
+
+  // The suspicion of a jammed radio (core/radio_watch.hpp), from when each Zigbee sensor was last heard; call it now and then.
+  RadioVerdict radio_verdict(std::uint64_t now_ms) {
+    std::vector<std::uint64_t> heard;
+    for (const ZoneView& view : views_) if (view.enabled && view.zigbee) heard.push_back(view.has_reading ? view.heard_ms : 0);
+    return radio_.update(heard, listening_since_ms_, now_ms);
+  }
   bool locked_out(std::uint64_t now_ms) const { return panel_.locked_out(now_ms); }
 
   std::string state_json(std::uint64_t timestamp_ms, std::uint64_t now_ms) const {
@@ -267,6 +291,7 @@ class Runner {
     if (settings_.siren_loop.block_arming && siren_loop_.fault() && panel_.phase() == Phase::kDisarmed && mode != Mode::kDisarmed && !force) return Refusal::kZonesOpen;
     if (any_silent && !force) return Refusal::kZonesOpen;
     const Refusal result = panel_.arm(mode, force, now_ms, profile);
+    if (result == Refusal::kNone) walk_.stop();
     if (result == Refusal::kNone) for (std::size_t i = 0; i < views_.size(); ++i) left_out_[i] = views_[i].enabled && views_[i].zigbee && views_[i].silent;
     return result;
   }
@@ -279,6 +304,12 @@ class Runner {
   config::Settings settings_;
   Panel panel_;
   SirenLoop siren_loop_;
+  WalkTest walk_;
+  RadioWatch radio_;
+  // A zone that is not normal while a walk test runs is written down (zone numbers start at 1).
+  void note_walk(std::size_t index, ZoneState state, std::uint64_t now_ms) {
+    if (state != ZoneState::kNormal) walk_.seen(index + 1, now_ms);
+  }
   std::array<ZoneView, config::kZoneCount> views_;
   std::array<Debouncer, config::kZoneCount> filters_;
   std::array<std::uint8_t, config::kZoneCount> unreadable_{};
