@@ -53,8 +53,10 @@ jobs:
 
       - name: Report the coverage of core/
         run: |
-          gcovr -r . --object-directory build-cov --filter '.*core/' --gcov-ignore-errors=all --merge-mode-functions=merge-use-line-max --exclude-throw-branches --exclude-unreachable-branches --txt --txt-metric line -o -
-          gcovr -r . --object-directory build-cov --filter '.*core/' --gcov-ignore-errors=all --merge-mode-functions=merge-use-line-max --exclude-throw-branches --exclude-unreachable-branches --json-summary -o coverage.json
+          gcovr -r . --object-directory build-cov --filter '.*core/' --gcov-ignore-errors=all --exclude-throw-branches --exclude-unreachable-branches --txt --txt-metric line -o -
+
+          gcovr -r . --object-directory build-cov --filter '.*core/' --gcov-ignore-errors=all --exclude-throw-branches --exclude-unreachable-branches --txt --txt-metric branch -o -
+          gcovr -r . --object-directory build-cov --filter '.*core/' --gcov-ignore-errors=all --exclude-throw-branches --exclude-unreachable-branches --json-summary -o coverage.json
 
       - name: Hold the floor
         run: |
