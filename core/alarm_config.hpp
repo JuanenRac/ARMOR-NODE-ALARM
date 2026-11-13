@@ -105,6 +105,7 @@ struct ServerLink {
   Choice config_hash = Choice::kPolicy, zone_feed = Choice::kPolicy, zone_signature = Choice::kPolicy;
   PinChoice disarm_pin = PinChoice::kPolicy;
   std::string zone_feed_key;   // 64 hexadecimal digits, from Studio (GET /api/v1/alarm/zone-feed/key/{node}); a secret like the PIN, never shown again
+  std::string command_key;     // 64 hexadecimal digits, the `command_key` of GET /api/v1/admin/nodes/{id}/token of the server (while its option commands.require_sig is on): with a key here the panel takes only commands the server signed (command_sig.hpp); empty: any command of the contract, as before; a secret, never shown again
 };
 
 struct Settings : NodeSettings, IoSettings {
@@ -227,6 +228,7 @@ inline void read_settings(const json::Value& document, Settings& s, Problems& pr
     const std::initializer_list<std::pair<const char*, PinChoice>> pin_choices = {{"policy", PinChoice::kPolicy}, {"never", PinChoice::kNever}, {"if_set", PinChoice::kIfSet}, {"always", PinChoice::kAlways}};
     if (!read_choice<PinChoice>(*server, "disarm_pin", pin_choices, s.server.disarm_pin)) bad(problems, "server.disarm_pin", "invalid");
     read_secret(*server, "zone_feed_key", s.server.zone_feed_key, "server.zone_feed_key", problems);
+    read_secret(*server, "command_key", s.server.command_key, "server.command_key", problems);
   }
 }
 
@@ -311,6 +313,7 @@ inline Problems validate(const Settings& s) {
   }
   if (s.server.commands && !s.mqtt.enabled) bad(problems, "server.commands", "needs_broker");
   if (!s.server.zone_feed_key.empty() && !zone_feed_key_is_valid(s.server.zone_feed_key)) bad(problems, "server.zone_feed_key", "invalid");
+  if (!s.server.command_key.empty() && !zone_feed_key_is_valid(s.server.command_key)) bad(problems, "server.command_key", "invalid");
   if (s.server.zone_signature == Choice::kOn && s.server.zone_feed_key.empty()) bad(problems, "server.zone_feed_key", "required");   // a signature nobody can check would shut the feed for good
   // the radio the node may take over is the one on its board or a coordinator on the network
   const bool has_radio = s.zigbee.enabled || !s.zigbee.network_host.empty();
@@ -351,6 +354,7 @@ inline std::string to_json(const Settings& s, bool secrets) {
       .field("hold_ms", static_cast<long long>(s.siren_loop.timing.hold_ms)).field("clear_ms", static_cast<long long>(s.siren_loop.timing.clear_ms)).field("read_while_sounding", s.siren_loop.timing.read_while_sounding).field("block_arming", s.siren_loop.block_arming).end_object();
   w.key("server").begin_object().field("commands", s.server.commands).field("config_hash", to_text(s.server.config_hash)).field("zone_feed", to_text(s.server.zone_feed)).field("zone_signature", to_text(s.server.zone_signature)).field("disarm_pin", to_text(s.server.disarm_pin));
   if (secrets) w.field("zone_feed_key", s.server.zone_feed_key); else w.field("zone_feed_key_set", !s.server.zone_feed_key.empty());
+  if (secrets) w.field("command_key", s.server.command_key); else w.field("command_key_set", !s.server.command_key.empty());
   w.end_object();
   w.key("zigbee_local").begin_object().field("after_s", s.zigbee_local.after_s).field("bridge_state_topic", s.zigbee_local.bridge_state_topic).key("sirens").begin_array();
   for (const std::string& siren : s.zigbee_local.sirens) if (!siren.empty()) w.string(siren);

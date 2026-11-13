@@ -150,7 +150,7 @@ inline bool parse_command(const std::string& text, const std::string& node_id, C
   json::Value document;
   if (!json::parse(text, document) || !document.is_object()) return false;
   for (const std::string& name : document.names) {
-    if (name != "kind" && name != "node_id" && name != "timestamp_ms" && name != "command_id" && name != "action" && name != "mode" && name != "force" && name != "profile") return false;
+    if (name != "kind" && name != "node_id" && name != "timestamp_ms" && name != "command_id" && name != "action" && name != "mode" && name != "force" && name != "profile" && name != "nonce" && name != "sig") return false;
   }
   if (document.string_or("kind", "") != "alarm_command" || document.string_or("node_id", "") != node_id) return false;
   const json::Value* stamp = document.get("timestamp_ms");

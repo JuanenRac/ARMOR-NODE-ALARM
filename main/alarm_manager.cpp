@@ -157,7 +157,8 @@ void on_command(const std::string&, const std::string& payload) {
   if (!node_control::working()) { ESP_LOGW(kTag, "a command of the server was ignored: the node's work is off (paused or in standby), the house is NOT protected"); return; }
   std::lock_guard<std::mutex> guard(g_lock);
   if (!g_sup) return;
-  const alarm::Reply reply = g_sup->runner().handle(payload, now_ms());
+  const alarm::Reply reply = g_sup->runner().handle(payload, now_ms(), mqtt_link::clock_is_set() ? static_cast<std::int64_t>(mqtt_link::wall_clock_ms()) : 0);
+  if (reply.signature_refused) { ESP_LOGW(kTag, "a command of the server was dropped: its signature was refused (%s)", command_sig::to_text(reply.verdict)); return; }
   if (!reply.understood) { ESP_LOGW(kTag, "a message on the command topic was ignored: it is not the contract's command"); return; }
   ESP_LOGW(kTag, "the server said %s%s%s: %s", reply.command.action == alarm::Action::kArm ? "arm" : reply.command.action == alarm::Action::kSilence ? "silence" : "disarm",
            reply.command.has_profile ? " with the profile " : "", reply.command.has_profile ? reply.command.profile.id.c_str() : "", alarm::refusal_text(reply.refusal));
