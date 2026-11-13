@@ -54,7 +54,7 @@ class Runner {
   explicit Runner(const config::Settings& settings)
       : settings_(settings), panel_(settings.panel.timing, zones_of(settings), settings.panel.pin),
         siren_loop_(settings.siren_loop.enabled, settings.siren_loop.limits, settings.siren_loop.timing),
-        walk_(settings.walk_test.enabled), radio_(settings.radio_watch.enabled, settings.radio_watch.limits) {
+        walk_(settings.walk_test.enabled), radio_watch_(settings.radio_watch.enabled, settings.radio_watch.limits) {
     for (std::size_t i = 0; i < config::kZoneCount; ++i) {
       ZoneView& view = views_[i];
       const config::ZoneSetting& zone = settings.zones[i];
@@ -260,7 +260,7 @@ class Runner {
   RadioVerdict radio_verdict(std::uint64_t now_ms) {
     std::vector<std::uint64_t> heard;
     for (const ZoneView& view : views_) if (view.enabled && view.zigbee) heard.push_back(view.has_reading ? view.heard_ms : 0);
-    return radio_.update(heard, listening_since_ms_, now_ms);
+    return radio_watch_.update(heard, listening_since_ms_, now_ms);
   }
   bool locked_out(std::uint64_t now_ms) const { return panel_.locked_out(now_ms); }
 
@@ -305,7 +305,7 @@ class Runner {
   Panel panel_;
   SirenLoop siren_loop_;
   WalkTest walk_;
-  RadioWatch radio_;
+  RadioWatch radio_watch_;
   // A zone that is not normal while a walk test runs is written down (zone numbers start at 1).
   void note_walk(std::size_t index, ZoneState state, std::uint64_t now_ms) {
     if (state != ZoneState::kNormal) walk_.seen(index + 1, now_ms);
