@@ -41,7 +41,7 @@
 | Maturity | Functional |
 | Role | Alarm panel field node for ESP32-S3 (family: Field Nodes, parent: ARMOR-COMMON) |
 | Stack | C++17, ESP-IDF 5.5.5, ESP32-S3 |
-| Tests | 513383 checks in 26 host programs and 6 Python checks (`ctest`) |
+| Tests | 513383 checks in 26 host programs and 7 Python checks (`ctest`) |
 | Inputs | Up to 8 wired loops, Zigbee sensors (IAS Zone) and siren (IAS WD), 4 buttons |
 | Runs on | An ESP32-S3 board (Ethernet or Wi-Fi) with the base board; host tests on any computer |
 | On real hardware | None yet: no board, zone, siren or Zigbee coordinator connected (host tests, the build and the panel in a browser only) |
@@ -202,7 +202,7 @@ cmake -S tests -B build/host && cmake --build build/host && ctest --test-dir bui
 python -I tools/armor_ci_validate.py
 ```
 
-26 host test programs and 6 Python checks run under `ctest`; 513383 checks counted by the host programs, built with `-Werror`.
+26 host test programs and 7 Python checks run under `ctest`; 513383 checks counted by the host programs, built with `-Werror`.
 
 Python checks: the panel texts in eight languages, the tasks, the save paths, the Bluetooth session under its lock and the routes the panel calls (and, in some nodes, the HTTP codes or the glyphs of the fonts)
 
