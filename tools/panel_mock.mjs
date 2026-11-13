@@ -43,6 +43,8 @@ const config = {
   server: { commands: false, config_hash: "policy", zone_feed: "policy", zone_signature: "policy", disarm_pin: "policy", zone_feed_key_set: false },
   zigbee_local: { bridge_state_topic: "", after_s: 0, sirens: [] },
   walk_test: { enabled: false, seconds: 300 },
+  keypad: { enabled: false, idle_s: 10, max_digits: 8 },
+  backup_battery: { enabled: false, divider: 5.7, empty_mv: 11000, full_mv: 12800, low_mv: 11800, missing_mv: 3000, margin_mv: 150 },
   radio_watch: { enabled: false, silence_s: 600, min_sensors: 3, share_percent: 75, hold_s: 120 },
   zigbee: { enabled: true, rx: 18, tx: 17, reset: 21, bootloader: 47, baud: 115200, port: 8888, allowed_client: "192.168.0.180", fallback_client: "", fallback_after_s: 30 },
   remote: { relays: false, link_timeout_s: 0, http: false, token_set: false },
@@ -252,7 +254,8 @@ const server = createServer(async (request, response) => {
     return json(response, 200, { ok: true });
   }
   if (method === "GET" && route === "io") return json(response, 200, io());
-  if (method === "GET" && route === "walk-test") return json(response, 200, { walk: { running: walk.running, seen: walk.seen, missing: config.zones.filter(z => z.enabled && !walk.seen.includes(config.zones.indexOf(z) + 1)).map(z => config.zones.indexOf(z) + 1) }, radio: config.radio_watch.enabled ? "healthy" : "off" });
+  if (method === "GET" && route === "walk-test") return json(response, 200, { walk: { running: walk.running, seen: walk.seen, missing: config.zones.filter(z => z.enabled && !walk.seen.includes(config.zones.indexOf(z) + 1)).map(z => config.zones.indexOf(z) + 1) }, radio: config.radio_watch.enabled ? "healthy" : "off",
+    hardware: { keypad: { enabled: config.keypad.enabled, typed: 0 }, backup_battery: { enabled: config.backup_battery.enabled, state: config.backup_battery.enabled ? "good" : "unknown", percent: config.backup_battery.enabled ? 86 : 0, battery_mv: config.backup_battery.enabled ? 12540 : 0 } } });
   if (method === "POST" && route === "walk-test") {
     if (!needAdmin()) return;
     if (body.action === "stop") { walk.running = false; return json(response, 200, { ok: true }); }

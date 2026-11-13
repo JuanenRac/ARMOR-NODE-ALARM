@@ -22,6 +22,8 @@
 #include "z2m_watch.hpp"
 #include "radio_watch.hpp"
 #include "siren_loop.hpp"
+#include "backup_battery.hpp"
+#include "keypad.hpp"
 #include "walk_test.hpp"
 #include "node_settings.hpp"
 #include "stored_load.hpp"
@@ -89,6 +91,19 @@ struct WalkTestSetting {
   int seconds = 300;   // how long one walk lasts, 60 to 1800
 };
 
+// A keypad at the door (core/keypad.hpp): the digits typed make a PIN that goes to the panel like the PIN of its page. OFF by default; tried with simulated frames, no keypad was connected.
+struct KeypadSetting {
+  bool enabled = false;
+  int idle_s = 10;      // a pause this long throws the digits typed away (3 to 60)
+  int max_digits = 8;   // more digits than this start over (4 to 8)
+};
+
+// The backup battery read through a divider (core/backup_battery.hpp). OFF by default; tried with simulated readings, no battery was connected.
+struct BackupBatterySetting {
+  bool enabled = false;
+  alarm::BackupBatteryLimits limits;
+};
+
 // The suspicion of a jammed radio (core/radio_watch.hpp): most of the Zigbee sensors quiet together for a while. OFF by default. The state message and the panel say so; nothing is armed or sounded by it.
 struct RadioWatchSetting {
   bool enabled = false;
@@ -130,6 +145,8 @@ struct Settings : NodeSettings, IoSettings {
   SirenLoopSetting siren_loop;
   WalkTestSetting walk_test;
   RadioWatchSetting radio_watch;
+  KeypadSetting keypad;
+  BackupBatterySetting backup_battery;
   ServerLink server;
   ZigbeeLocal zigbee_local;
 };
@@ -213,6 +230,23 @@ inline void read_settings(const json::Value& document, Settings& s, Problems& pr
   if (const json::Value* walk = document.get("walk_test"); walk != nullptr && walk->is_object()) {
     read_bool(*walk, "enabled", s.walk_test.enabled, "walk_test.enabled", problems);
     read_int(*walk, "seconds", s.walk_test.seconds, 60, 1800, "walk_test.seconds", problems);
+  }
+  if (const json::Value* pad = document.get("keypad"); pad != nullptr && pad->is_object()) {
+    read_bool(*pad, "enabled", s.keypad.enabled, "keypad.enabled", problems);
+    read_int(*pad, "idle_s", s.keypad.idle_s, 3, 60, "keypad.idle_s", problems);
+    read_int(*pad, "max_digits", s.keypad.max_digits, 4, 8, "keypad.max_digits", problems);
+  }
+  if (const json::Value* battery = document.get("backup_battery"); battery != nullptr && battery->is_object()) {
+    BackupBatterySetting& b = s.backup_battery;
+    read_bool(*battery, "enabled", b.enabled, "backup_battery.enabled", problems);
+    read_double(*battery, "divider", b.limits.divider, 1.0, 20.0, "backup_battery.divider", problems);
+    read_double(*battery, "empty_mv", b.limits.empty_mv, 1000.0, 60000.0, "backup_battery.empty_mv", problems);
+    read_double(*battery, "full_mv", b.limits.full_mv, 1000.0, 60000.0, "backup_battery.full_mv", problems);
+    read_double(*battery, "low_mv", b.limits.low_mv, 1000.0, 60000.0, "backup_battery.low_mv", problems);
+    read_double(*battery, "missing_mv", b.limits.missing_mv, 0.0, 60000.0, "backup_battery.missing_mv", problems);
+    read_double(*battery, "margin_mv", b.limits.margin_mv, 0.0, 2000.0, "backup_battery.margin_mv", problems);
+    // the charge goes from empty to full, and "low" lies between them: otherwise the percent and the states would contradict each other
+    if (!(b.limits.empty_mv < b.limits.low_mv && b.limits.low_mv < b.limits.full_mv && b.limits.missing_mv < b.limits.empty_mv)) bad(problems, "backup_battery", "range");
   }
   if (const json::Value* radio = document.get("radio_watch"); radio != nullptr && radio->is_object()) {
     RadioWatchSetting& r = s.radio_watch;
@@ -381,6 +415,10 @@ inline std::string to_json(const Settings& s, bool secrets) {
   w.key("siren_loop").begin_object().field("enabled", s.siren_loop.enabled).field("pin", s.siren_loop.pin).key("short_below_mv").number(s.siren_loop.limits.short_below_mv).key("ok_below_mv").number(s.siren_loop.limits.ok_below_mv)
       .field("hold_ms", static_cast<long long>(s.siren_loop.timing.hold_ms)).field("clear_ms", static_cast<long long>(s.siren_loop.timing.clear_ms)).field("read_while_sounding", s.siren_loop.timing.read_while_sounding).field("block_arming", s.siren_loop.block_arming).end_object();
   w.key("walk_test").begin_object().field("enabled", s.walk_test.enabled).field("seconds", s.walk_test.seconds).end_object();
+  w.key("keypad").begin_object().field("enabled", s.keypad.enabled).field("idle_s", s.keypad.idle_s).field("max_digits", s.keypad.max_digits).end_object();
+  w.key("backup_battery").begin_object().field("enabled", s.backup_battery.enabled).key("divider").number(s.backup_battery.limits.divider).key("empty_mv").number(s.backup_battery.limits.empty_mv)
+      .key("full_mv").number(s.backup_battery.limits.full_mv).key("low_mv").number(s.backup_battery.limits.low_mv).key("missing_mv").number(s.backup_battery.limits.missing_mv)
+      .key("margin_mv").number(s.backup_battery.limits.margin_mv).end_object();
   w.key("radio_watch").begin_object().field("enabled", s.radio_watch.enabled).field("silence_s", static_cast<long long>(s.radio_watch.limits.silence_s))
       .field("min_sensors", static_cast<long long>(s.radio_watch.limits.min_sensors)).field("share_percent", static_cast<long long>(s.radio_watch.limits.share_percent))
       .field("hold_s", static_cast<long long>(s.radio_watch.limits.hold_s)).end_object();

@@ -519,6 +519,22 @@ async function walkAction(action) {
   await walkRefresh(); render();
 }
 
+// The door keypad and the backup battery: both off until the person turns them on. What they say now comes with the answer about the walk test.
+function hardwareCard() {
+  const cfg = S.cfg, h = S.walk && S.walk.hardware;
+  const mv = (label, path) => field(label, path, { type: "number", min: 0, max: 60000, step: "any" });
+  return el("section", { class: "card" }, el("h2", {}, t("keypadTitle")), el("p", { class: "muted" }, t("keypadHint")),
+    field("keypadEnabled", "keypad.enabled", { type: "checkbox", rerender: true }),
+    cfg.keypad.enabled ? el("div", { class: "row" }, field("keypadIdle", "keypad.idle_s", { type: "number", min: 3, max: 60 }), field("keypadDigits", "keypad.max_digits", { type: "number", min: 4, max: 8 })) : null,
+    el("h2", {}, t("batteryTitle")), el("p", { class: "muted" }, t("batteryHint")),
+    field("batteryEnabled", "backup_battery.enabled", { type: "checkbox", rerender: true }),
+    cfg.backup_battery.enabled ? [
+      el("div", { class: "row" }, field("batteryDivider", "backup_battery.divider", { type: "number", min: 1, max: 20, step: "any" }), field("batteryMargin", "backup_battery.margin_mv", { type: "number", min: 0, max: 2000, step: "any" })),
+      el("div", { class: "row" }, mv("batteryEmpty", "backup_battery.empty_mv"), mv("batteryFull", "backup_battery.full_mv")),
+      el("div", { class: "row" }, mv("batteryLow", "backup_battery.low_mv"), mv("batteryMissing", "backup_battery.missing_mv")),
+      h && h.backup_battery && h.backup_battery.enabled ? el("p", { class: "muted", id: "battery-now" }, t("batteryNow", t("battery_state_" + h.backup_battery.state), h.backup_battery.percent, h.backup_battery.battery_mv)) : null] : null);
+}
+
 // The walk test and the radio watch: both off until the person turns them on.
 function walkCard() {
   const cfg = S.cfg, w = S.walk && S.walk.walk;
@@ -568,6 +584,7 @@ function zigbeePage() {
           z.has_bootloader ? el("button", { class: "b danger", onclick: () => radioAction("bootloader") }, t("zbBootBtn")) : null) : null,
         el("p", { class: "hint" }, t("zbBootHint"))) : null,
       walkCard(),
+      hardwareCard(),
       el("section", { class: "card" }, el("h2", {}, t("zbYamlTitle")), el("p", { class: "muted" }, t("zbYamlHint")),
         el("pre", { class: "code" }, "serial:\n  port: tcp://" + (ip || "<node>") + ":" + (cfg.port || 8888) + "\n  adapter: zstack"))));
 }

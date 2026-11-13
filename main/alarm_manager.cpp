@@ -451,6 +451,11 @@ std::string walk_report() {
   return g_sup ? g_sup->runner().walk_test_report(now_ms()) : std::string("{\"running\":false,\"seen\":[],\"missing\":[]}");
 }
 
+std::string keypad_battery_json() {
+  std::lock_guard<std::mutex> guard(g_lock);
+  return g_sup ? g_sup->runner().keypad_battery_json() : std::string("{\"keypad\":{\"enabled\":false,\"typed\":0},\"backup_battery\":{\"enabled\":false,\"state\":\"unknown\",\"percent\":0,\"battery_mv\":0}}");
+}
+
 std::string radio_verdict_text() {
   std::lock_guard<std::mutex> guard(g_lock);
   if (!g_sup) return "off";
