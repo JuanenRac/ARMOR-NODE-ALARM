@@ -525,7 +525,7 @@ esp_err_t post_alarm_arm(httpd_req_t* r) {
 esp_err_t get_walk_test(httpd_req_t* r) {
   Who who;
   if (!require(r, who, true, false)) return ESP_OK;
-  return send_json(r, 200, std::string("{\"walk\":") + manager::walk_report() + ",\"radio\":\"" + manager::radio_verdict_text() + "\"}");
+  return send_json(r, 200, std::string("{\"walk\":") + manager::walk_report() + ",\"radio\":\"" + manager::radio_verdict_text() + "\",\"hardware\":" + manager::keypad_battery_json() + "}");
 }
 
 esp_err_t post_walk_test(httpd_req_t* r) {

@@ -16,6 +16,8 @@
 #include "alarm_policy.hpp"
 #include "alarm_zone.hpp"
 #include "radio_watch.hpp"
+#include "backup_battery.hpp"
+#include "keypad.hpp"
 #include "walk_test.hpp"
 #include "command_sig.hpp"
 #include "siren_loop.hpp"
@@ -54,7 +56,8 @@ class Runner {
   explicit Runner(const config::Settings& settings)
       : settings_(settings), panel_(settings.panel.timing, zones_of(settings), settings.panel.pin),
         siren_loop_(settings.siren_loop.enabled, settings.siren_loop.limits, settings.siren_loop.timing),
-        walk_(settings.walk_test.enabled), radio_watch_(settings.radio_watch.enabled, settings.radio_watch.limits) {
+        walk_(settings.walk_test.enabled), radio_watch_(settings.radio_watch.enabled, settings.radio_watch.limits),
+        pad_(static_cast<std::uint32_t>(settings.keypad.idle_s) * 1000u, static_cast<std::size_t>(settings.keypad.max_digits)), battery_(settings.backup_battery.limits) {
     for (std::size_t i = 0; i < config::kZoneCount; ++i) {
       ZoneView& view = views_[i];
       const config::ZoneSetting& zone = settings.zones[i];
@@ -264,6 +267,26 @@ class Runner {
   }
   bool locked_out(std::uint64_t now_ms) const { return panel_.locked_out(now_ms); }
 
+  // The keypad at the door (core/keypad.hpp): a key pressed. Nothing happens while the setting is off. The `#` hands the digits typed to the panel exactly as its page would (the PIN is
+  // checked, wrong ones count toward the lockout); `attempted` says whether a PIN was tried, and the result is the panel's answer.
+  Refusal keypad_press(const KeyPress& key, std::uint64_t now_ms, bool& attempted) {
+    attempted = false;
+    if (!settings_.keypad.enabled) return Refusal::kNone;
+    if (!pad_.press(key, now_ms)) return Refusal::kNone;
+    attempted = true;
+    return disarm(pad_.entered(), now_ms);
+  }
+  // The reading of the pin of the backup battery in millivolts; ignored while the setting is off.
+  void battery_feed(double pin_mv) { if (settings_.backup_battery.enabled) battery_reading_ = battery_.update(pin_mv); }
+  // What the keypad and the backup battery say now, as JSON for the panel's page (not part of the state message of the contract).
+  std::string keypad_battery_json() const {
+    static const char* const kNames[] = {"unknown", "missing", "critical", "low", "good"};
+    std::string out = std::string("{\"keypad\":{\"enabled\":") + (settings_.keypad.enabled ? "true" : "false") + ",\"typed\":" + std::to_string(pad_.typed()) + "},\"backup_battery\":{\"enabled\":" +
+                      (settings_.backup_battery.enabled ? "true" : "false") + ",\"state\":\"" + kNames[static_cast<int>(battery_reading_.state)] + "\",\"percent\":" + std::to_string(battery_reading_.percent) +
+                      ",\"battery_mv\":" + std::to_string(static_cast<long long>(battery_reading_.battery_mv + 0.5)) + "}}";
+    return out;
+  }
+
   std::string state_json(std::uint64_t timestamp_ms, std::uint64_t now_ms) const {
     std::vector<ZoneReport> reports;
     for (const ZoneView& view : views_) if (view.enabled) reports.push_back({view.id, view.name, view.kind, view.state, view.bypassed});
@@ -306,6 +329,9 @@ class Runner {
   SirenLoop siren_loop_;
   WalkTest walk_;
   RadioWatch radio_watch_;
+  PinEntry pad_;
+  BackupBattery battery_;
+  BatteryReading battery_reading_;
   // A zone that is not normal while a walk test runs is written down (zone numbers start at 1).
   void note_walk(std::size_t index, ZoneState state, std::uint64_t now_ms) {
     if (state != ZoneState::kNormal) walk_.seen(index + 1, now_ms);

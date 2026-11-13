@@ -32,6 +32,8 @@ alarm::Refusal silence(const std::string& pin);
 bool walk_start();
 void walk_stop();
 std::string walk_report();
+// What the keypad and the backup battery say now, as JSON (both off by default).
+std::string keypad_battery_json();
 // The suspicion of a jammed radio as a word: off, too_few, healthy, watching or suspected.
 std::string radio_verdict_text();
 
