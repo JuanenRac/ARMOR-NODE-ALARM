@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.5.7] - Door keypad, backup battery, walk test, signed commands, random Bluetooth PIN and guarded firmware upload
+
 - **The test against a real broker retries the start of the broker:** `tests/check_mosquitto.py` (from the shared firmware base) makes up to three attempts to start Mosquitto, 1 s and 2 s apart and each on a new port, before it reports `mosquitto did not start`. Only the start is retried, never the checks that follow.
 - **The shared firmware base is brought up to date:** the readers of the messages know the system summary of a solar gateway and the notice of the network node, and the rule that decides when the broker client restarts and when it moves to the next saved broker lives in one tested place (`core/broker_failover.hpp`, with its host test). No change of behaviour is meant.
 - **The door keypad and the backup battery have their settings and their page, both off by default:** `keypad` (`enabled`, `idle_s`, `max_digits`) and `backup_battery` (`enabled`, the divider and the five voltage limits, checked so that the limits cannot contradict each other) are read, checked and written back; the alarm loop takes the keys of the keypad and tries the PIN like the page of the panel (same lockout) and takes the readings of the battery, and the panel shows both in the eight languages. Tried with simulated keys and readings; no keypad or battery has been connected, and the reading of the Wiegand or RS485 lines and of the analog pin from the board is still to be connected.
