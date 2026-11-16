@@ -155,6 +155,21 @@ static std::uint64_t bring_up(zigbee::LocalZigbee& z, std::uint64_t now) {
   return now;
 }
 
+static void test_updates_are_capped() {
+  zigbee::LocalZigbee z({{"front-door", kDoor}}, {{kSiren}});
+  std::uint64_t now = bring_up(z, 1000);
+  z.tick(now + 1);
+  z.take_output();
+  Bytes d{0}; znp::put64(d, kDoor); znp::put16(d, 0x1234); d.push_back(0); d.push_back(0);
+  feed(z, frame_bytes(znp::Type::kAreq, znp::sub::kZdo, 0x80, d), now += 100);
+  for (int i = 0; i < 100; ++i) {                                     // nobody collects them (the node is paused)
+    const std::uint8_t open = (i == 99) ? 0x00 : 0x01;                // the newest one is a close
+    feed(z, frame_bytes(znp::Type::kAreq, znp::sub::kAf, 0x81, incoming(0x0500, 0x1234, Bytes{0x09, static_cast<std::uint8_t>(i), 0x00, open, 0x00, 0x00, 0x01, 0x00, 0x00}).data), now += 10);
+  }
+  const std::vector<zigbee::ZoneUpdate> kept = z.take_updates();
+  CHECK(kept.size() == 64 && kept.back().state == alarm::ZoneState::kNormal);
+}
+
 static void test_conversation() {
   zigbee::LocalZigbee z({{"front-door", kDoor}, {"hall-motion", kMotion}}, {{kSiren}});
   CHECK(z.state() == zigbee::LocalZigbee::State::kIdle);
@@ -659,6 +674,7 @@ static void test_bridge_topic_setting() {
 }
 
 int main() {
+  test_updates_are_capped();
   test_a_siren_that_was_away();
   test_siren_warning_kind();
   test_a_coordinator_that_is_already_running();

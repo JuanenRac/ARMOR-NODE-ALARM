@@ -130,6 +130,7 @@ class LocalZigbee {
     out_.insert(out_.end(), bytes.begin(), bytes.end());
   }
   static constexpr std::size_t kMaxOut = 4096;
+  static constexpr std::size_t kMaxUpdates = 64;
 
   void send_step(State next, std::uint64_t now_ms) { state_ = next; tries_ = 0; send_current(now_ms); }
   void send_current(std::uint64_t now_ms) {
@@ -193,6 +194,7 @@ class LocalZigbee {
         update.zone_id = s.config.zone_id;
         update.state = change->tamper() ? alarm::ZoneState::kTamper : change->triggered() ? alarm::ZoneState::kTriggered : alarm::ZoneState::kNormal;
         update.battery_low = change->battery_low();
+        if (updates_.size() >= kMaxUpdates) updates_.erase(updates_.begin());   // nobody collects them while paused: keep the newest
         updates_.push_back(update);
       }
       return;

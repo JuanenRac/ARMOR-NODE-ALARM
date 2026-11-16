@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The notices from Zigbee sensors that nobody has collected are capped at 64:** while the node is paused or in standby the oldest notice is dropped when a new one arrives, so the memory cannot grow without limit. Tested with a hundred notices.
+
 - **The order channel of the node can check a signature before it reads anything:** `node_control::Options` has an optional `authorize` hook that sees each order that arrives on `armor/control/...` and drops it, before it can arm anything, when the node says no. A node that does not set it behaves as before.
 
 - **Orders to the alarm node itself can require the server signature (fail closed):** the new setting `server.control_require_sig` (off by default, so a server that does not sign them yet keeps working) makes the node read pause, standby, restart and the other orders of `armor/control/...` only when they carry a good HMAC signature made with `server.command_key` and a nonce not seen before; with it on and no valid key, none is read. An order that carries a signature is checked even with the setting off, and the nonce and signature are taken off before the order is read. Tested on a computer: unsigned, wrongly signed, replayed, stale, altered and keyless orders are refused.
