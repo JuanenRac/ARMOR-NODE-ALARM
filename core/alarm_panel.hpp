@@ -42,6 +42,8 @@ struct Timing {
   // A Zigbee sensor that says nothing for this many minutes is taken as lost (a flat battery, a jammed radio): while the system is armed it counts as tamper, because a dead sensor is how
   // a perimeter is defeated. 0 turns it off (a sensor that only reports when it changes would otherwise be taken for lost).
   std::uint32_t zigbee_silence_min = 0;
+  // The wrong PINs counted towards a lockout survive a restart (a power cut between two guesses no longer gives a fresh set of tries). Off keeps the count in RAM only.
+  bool persist_wrong_pins = true;
 };
 
 struct Event {
@@ -206,11 +208,13 @@ class Panel {
     std::vector<std::string> bypassed;
     bool silenced = false;   // the alarm was running but its siren had timed out
     std::uint32_t lockout = 0;   // 0 none, 1..3 the lockout that was running (its length grows with it)
-    bool operator==(const Saved& other) const { return phase == other.phase && mode == other.mode && bypassed == other.bypassed && silenced == other.silenced && lockout == other.lockout; }
+    std::uint32_t wrong = 0;     // the wrong PINs counted towards the next lockout (0 when the setting that keeps them is off)
+    bool operator==(const Saved& other) const { return phase == other.phase && mode == other.mode && bypassed == other.bypassed && silenced == other.silenced && lockout == other.lockout && wrong == other.wrong; }
   };
   Saved saved() const {
     Saved out;
     if (locked_until_ms_ != 0) out.lockout = lockouts_ < 1 ? 1 : lockouts_;
+    else if (timing_.persist_wrong_pins) out.wrong = wrong_pins_;
     if (phase_ == Phase::kDisarmed) return out;
     out.silenced = phase_ == Phase::kAlarm && !siren_on_;
     out.mode = mode_;
@@ -226,6 +230,8 @@ class Panel {
       static constexpr std::uint32_t kGrowth[3] = {1, 5, 15};
       lockouts_ = saved.lockout;
       locked_until_ms_ = now_ms + static_cast<std::uint64_t>(timing_.lockout_s) * kGrowth[saved.lockout - 1] * 1000ULL;
+    } else if (timing_.persist_wrong_pins && saved.lockout == 0 && saved.wrong > 0 && locked_until_ms_ == 0 && wrong_pins_ == 0) {
+      wrong_pins_ = saved.wrong < timing_.lockout_after ? saved.wrong : timing_.lockout_after - 1;   // never more than one short of a lockout, whatever the record says
     }
     if (phase_ != Phase::kDisarmed || saved.phase == Phase::kDisarmed) return false;
     // an alarm of an always-zone (smoke, panic) or of a tamper runs with the system disarmed: it comes back as the same alarm, not as nothing
@@ -387,11 +393,12 @@ class Panel {
 inline std::string saved_text(const Panel::Saved& saved) {
   std::string text = std::string(phase_text(saved.phase)) + "|" + (saved.mode == Mode::kAway ? "away" : saved.mode == Mode::kStay ? "stay" : "disarmed") + "|";
   for (std::size_t i = 0; i < saved.bypassed.size(); ++i) text += (i ? "," : "") + saved.bypassed[i];
-  // optional extras after a third bar: "silenced" and "lock1".."lock3"
-  if (saved.silenced || saved.lockout > 0) {
+  // optional extras after a third bar: "silenced", "lock1".."lock3" and "wrong1".."wrong20"
+  if (saved.silenced || saved.lockout > 0 || saved.wrong > 0) {
     text += "|";
     if (saved.silenced) text += "silenced";
     if (saved.lockout > 0) text += std::string(saved.silenced ? "," : "") + "lock" + std::to_string(saved.lockout);
+    if (saved.wrong > 0) text += std::string(saved.silenced || saved.lockout > 0 ? "," : "") + "wrong" + std::to_string(saved.wrong);
   }
   return text;
 }
@@ -419,6 +426,8 @@ inline bool parse_saved(const std::string& text, Panel::Saved& out) {
         else if (word == "lock1") saved.lockout = 1;
         else if (word == "lock2") saved.lockout = 2;
         else if (word == "lock3") saved.lockout = 3;
+        else if (word.size() >= 6 && word.size() <= 7 && word.compare(0, 5, "wrong") == 0 && word[5] >= '1' && word[5] <= '9' && (word.size() == 6 || (word[6] >= '0' && word[6] <= '9')) &&
+                 std::stoi(word.substr(5)) <= 20) saved.wrong = static_cast<std::uint32_t>(std::stoi(word.substr(5)));
         else if (!word.empty()) return false;
         word.clear();
       } else word += text[i];
