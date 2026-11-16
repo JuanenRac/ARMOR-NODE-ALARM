@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The order channel of the node can check a signature before it reads anything:** `node_control::Options` has an optional `authorize` hook that sees each order that arrives on `armor/control/...` and drops it, before it can arm anything, when the node says no. A node that does not set it behaves as before.
+
+- **Orders to the alarm node itself can require the server signature (fail closed):** the new setting `server.control_require_sig` (off by default, so a server that does not sign them yet keeps working) makes the node read pause, standby, restart and the other orders of `armor/control/...` only when they carry a good HMAC signature made with `server.command_key` and a nonce not seen before; with it on and no valid key, none is read. An order that carries a signature is checked even with the setting off, and the nonce and signature are taken off before the order is read. Tested on a computer: unsigned, wrongly signed, replayed, stale, altered and keyless orders are refused.
+
 ## [0.5.7] - Door keypad, backup battery, walk test, signed commands, random Bluetooth PIN and guarded firmware upload
 
 - **The test against a real broker retries the start of the broker:** `tests/check_mosquitto.py` (from the shared firmware base) makes up to three attempts to start Mosquitto, 1 s and 2 s apart and each on a new port, before it reports `mosquitto did not start`. Only the start is retried, never the checks that follow.

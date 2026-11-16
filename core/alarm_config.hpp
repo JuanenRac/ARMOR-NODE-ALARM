@@ -134,6 +134,7 @@ struct ServerLink {
   Choice config_hash = Choice::kPolicy, zone_feed = Choice::kPolicy, zone_signature = Choice::kPolicy;
   PinChoice disarm_pin = PinChoice::kPolicy;
   std::string zone_feed_key;   // 64 hexadecimal digits, from Studio (GET /api/v1/alarm/zone-feed/key/{node}); a secret like the PIN, never shown again
+  bool control_require_sig = false;   // true: the orders of the server to the node itself (armor/control/...: pause, standby, restart...) are read only when signed with command_key; with no valid key none is read. Off by default, so a server that does not sign them yet keeps working
   std::string command_key;     // 64 hexadecimal digits, the `command_key` of GET /api/v1/admin/nodes/{id}/token of the server (while its option commands.require_sig is on): with a key here the panel takes only commands the server signed (command_sig.hpp); empty: any command of the contract, as before; a secret, never shown again
 };
 
@@ -283,6 +284,7 @@ inline void read_settings(const json::Value& document, Settings& s, Problems& pr
   }
   if (const json::Value* server = document.get("server"); server != nullptr && server->is_object()) {
     read_bool(*server, "commands", s.server.commands, "server.commands", problems);
+    read_bool(*server, "control_require_sig", s.server.control_require_sig, "server.control_require_sig", problems);
     const std::initializer_list<std::pair<const char*, Choice>> choices = {{"policy", Choice::kPolicy}, {"on", Choice::kOn}, {"off", Choice::kOff}};
     if (!read_choice<Choice>(*server, "config_hash", choices, s.server.config_hash)) bad(problems, "server.config_hash", "invalid");
     if (!read_choice<Choice>(*server, "zone_feed", choices, s.server.zone_feed)) bad(problems, "server.zone_feed", "invalid");
@@ -422,7 +424,7 @@ inline std::string to_json(const Settings& s, bool secrets) {
   w.key("radio_watch").begin_object().field("enabled", s.radio_watch.enabled).field("silence_s", static_cast<long long>(s.radio_watch.limits.silence_s))
       .field("min_sensors", static_cast<long long>(s.radio_watch.limits.min_sensors)).field("share_percent", static_cast<long long>(s.radio_watch.limits.share_percent))
       .field("hold_s", static_cast<long long>(s.radio_watch.limits.hold_s)).end_object();
-  w.key("server").begin_object().field("commands", s.server.commands).field("config_hash", to_text(s.server.config_hash)).field("zone_feed", to_text(s.server.zone_feed)).field("zone_signature", to_text(s.server.zone_signature)).field("disarm_pin", to_text(s.server.disarm_pin));
+  w.key("server").begin_object().field("commands", s.server.commands).field("control_require_sig", s.server.control_require_sig).field("config_hash", to_text(s.server.config_hash)).field("zone_feed", to_text(s.server.zone_feed)).field("zone_signature", to_text(s.server.zone_signature)).field("disarm_pin", to_text(s.server.disarm_pin));
   if (secrets) w.field("zone_feed_key", s.server.zone_feed_key); else w.field("zone_feed_key_set", !s.server.zone_feed_key.empty());
   if (secrets) w.field("command_key", s.server.command_key); else w.field("command_key_set", !s.server.command_key.empty());
   w.end_object();
