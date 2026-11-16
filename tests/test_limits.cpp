@@ -272,6 +272,46 @@ static void test_saved_state() {
   CHECK(entering.phase() == Phase::kEntryDelay && entering.saved().phase == Phase::kAlarm);
 }
 
+static void test_wrong_pins_survive_a_restart() {
+  // two wrong PINs of three are saved, so a power cut between guesses does not give a fresh set of tries
+  Panel panel(timing(), house(), "1234");
+  CHECK(panel.saved().wrong == 0);
+  panel.disarm("0000", 1000);
+  panel.disarm("0000", 1001);
+  const Panel::Saved saved = panel.saved();
+  CHECK(saved.wrong == 2 && saved.lockout == 0);
+  Panel::Saved read;
+  CHECK(saved_text(saved).find("wrong2") != std::string::npos && parse_saved(saved_text(saved), read) && read == saved);
+  Panel fresh(timing(), house(), "1234");
+  fresh.restore(read, 5000);
+  fresh.disarm("0000", 5001);
+  CHECK(fresh.locked_out(5002));   // the third wrong PIN in a row locks, whichever side of the restart it was
+  Panel again(timing(), house(), "1234");
+  again.restore(read, 5000);
+  CHECK(!again.locked_out(5000) && again.saved().wrong == 2);
+  // a right PIN clears the count and what is saved
+  again.disarm("1234", 5002);
+  CHECK(again.saved().wrong == 0);
+  // a record that claims more than the panel allows is cut to one short of a lockout
+  Panel::Saved greedy;
+  greedy.wrong = 20;
+  Panel cut(timing(), house(), "1234");
+  cut.restore(greedy, 0);
+  CHECK(cut.saved().wrong == 2);
+  // the setting off: nothing is saved and nothing is taken back
+  Timing off = timing();
+  off.persist_wrong_pins = false;
+  Panel volatile_panel(off, house(), "1234");
+  volatile_panel.disarm("0000", 10);
+  CHECK(volatile_panel.saved().wrong == 0);
+  Panel off_fresh(off, house(), "1234");
+  off_fresh.restore(read, 0);
+  CHECK(off_fresh.saved().wrong == 0);
+  // words that are not a count are not a saved state
+  Panel::Saved junk;
+  CHECK(!parse_saved("disarmed|disarmed||wrong0", junk) && !parse_saved("disarmed|disarmed||wrong21", junk) && !parse_saved("disarmed|disarmed||wrongx", junk));
+}
+
 static void test_lockout_survives_a_restart() {
   Panel panel(timing(), house(), "1234");
   for (const std::uint32_t level : {1u, 2u, 3u}) {
@@ -508,6 +548,7 @@ int main() {
   test_arming_rules();
   test_saved_state();
   test_lockout_survives_a_restart();
+  test_wrong_pins_survive_a_restart();
   test_events_are_bounded_and_aged();
   test_events_text();
   test_profiles_are_read_strictly();
