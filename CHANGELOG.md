@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A refused firmware can be erased from its slot:** the setting `security.ota_invalidate_rejected` (off by default, shown in the web panel in eight languages) erases the first sector of the slot a downloaded image was written to when that image is refused after it was complete (another project, another version than the release, not newer, a bad signature, or no way to boot it) and when a copy of the running slot does not end well, so a later fault cannot start it. The slot that runs is never touched.
+
+- **The Bluetooth pairing PIN can be a fixed one:** `ble.passkey_mode` now also takes `fixed`, with the six digits in `ble.passkey_pin` (kept and sealed like the node's passwords, never shown by the panel; the mode needs the PIN). The default is as before: the PIN derived from the setup code.
+
+- **The set-up access point can have a Wi-Fi password of its own:** the new setting `ap.setup_password` (8 to 63 characters, a secret, shown in the web panel) replaces the setup code of the label as the password of the access point a node without users opens. Empty by default, so nodes already installed keep their password; with it set, the code of the label no longer opens that Wi-Fi.
+
+- **The panel shows the switches of the signed orders:** the web panel gets the key of the signed orders (`server.command_key`) and the switch `security.control_require_sig`, in eight languages.
+
 - **The policy message of the server can be required to be signed:** the new setting `server.policy_signature` (`off` by default, `policy` or `on`, shown in the web panel in eight languages) makes the panel read `armor/alarm/<node>/policy` only when it carries a good signature made with `command_key`, so a message on the broker cannot lower the PIN or switch the signature off. With `on` and no key the settings are refused.
 
 - **The signature code is the shared one:** `core/command_sig.hpp` and `core/hmac_sha256.hpp` come from the shared firmware base. The shared setting `security.control_require_sig` (off by default) also makes the orders to the node itself require the signature, like `server.control_require_sig`.

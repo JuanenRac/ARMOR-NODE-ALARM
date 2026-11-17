@@ -440,7 +440,7 @@ inline std::string to_json(const Settings& s, bool secrets) {
   for (const std::string& siren : s.zigbee_local.sirens) if (!siren.empty()) w.string(siren);
   w.end_array().end_object();
   io_write(w, s, secrets);
-  node_write_tail(w, s);
+  node_write_tail(w, s, secrets);
   w.end_object();
   return w.str();
 }
