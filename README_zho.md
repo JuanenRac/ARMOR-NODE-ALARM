@@ -180,6 +180,7 @@ ARMOR-NODE-ALARM 是报警主机：防区、布防、延时、警笛和 PIN 都�
 | `siren_loop.enabled` | off | 监控警报器接线：模拟引脚读取警报器的回读线，状态消息带有 `siren_loop` 和 `siren_fault`（断线、短路或无法读取）；目前还没有电路板具备回读输入 |
 | `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | 回读引脚；低于多少毫伏为线路短路、不超过多少毫伏为警报器在位（高于则断线）；读数需持续多久才报告或解除故障（100–60000 毫秒）；警报器鸣响时是否也读取 |
 | `siren_loop.block_arming` | off | 在警报器接线故障期间，没有 `force` 就拒绝布防（如同有打开的防区）；无论如何都会报告故障 |
+| `server.persist_replay_floor` | off | 把已接受的签名命令的最大时间戳和区域信息流的最后序列号保存到闪存（最多每 30 秒一次），重启后不会忘记；因为会写闪存，默认关闭 |
 
 静音后的再次鸣响限制为 3 次（`kMaxResounds`）。警笛继电器每次重启时处于断开状态，代理丢失时也不会自动断开。
 

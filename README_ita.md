@@ -180,6 +180,7 @@ Non è un sistema di allarme certificato ([docs/SAFETY.md](docs/SAFETY.md)): è 
 | `siren_loop.enabled` | off | Supervisionare il cablaggio della sirena: un pin analogico legge la linea di ritorno della sirena e il messaggio di stato porta `siren_loop` e `siren_fault` (tagliato, in cortocircuito o illeggibile); nessuna scheda ha ancora l'ingresso di ritorno |
 | `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | Il pin di ritorno, i millivolt sotto i quali il filo è in cortocircuito e fino ai quali la sirena c'è (sopra il filo è tagliato), il tempo che una lettura deve durare per segnalare o togliere un guasto (100-60000 ms) e se la linea si legge anche mentre la sirena suona |
 | `siren_loop.block_arming` | off | Rifiutare l'armamento senza `force` finché il cablaggio della sirena è in guasto (come con una zona aperta); il guasto è segnalato comunque |
+| `server.persist_replay_floor` | off | Conservare in flash (al massimo ogni 30 s) il timestamp più alto di un comando firmato accettato e l'ultimo numero di sequenza del flusso delle zone, così che un riavvio non li dimentichi; spento perché scrive in flash |
 
 I nuovi suoni dopo un silenzio sono limitati a 3 (`kMaxResounds`). Il relè della sirena parte aperto a ogni riavvio e non cade aperto se si perde il broker.
 

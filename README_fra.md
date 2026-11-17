@@ -180,6 +180,7 @@ Ce n'est pas un système d'alarme certifié ([docs/SAFETY.md](docs/SAFETY.md)) :
 | `siren_loop.enabled` | off | Surveiller le câblage de la sirène : une broche analogique lit la ligne de retour de la sirène et le message d'état porte `siren_loop` et `siren_fault` (coupé, en court-circuit ou illisible) ; aucune carte n'a encore l'entrée de retour |
 | `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | La broche de retour, les millivolts sous lesquels le fil est en court-circuit et jusqu'auxquels la sirène est là (au-dessus le fil est coupé), le temps qu'une lecture doit tenir pour signaler ou lever un défaut (100-60000 ms) et si la ligne est aussi lue pendant que la sirène sonne |
 | `siren_loop.block_arming` | off | Refuser d'armer sans `force` tant que le câblage de la sirène est en défaut (comme avec une zone ouverte) ; le défaut est signalé dans tous les cas |
+| `server.persist_replay_floor` | off | Garder en flash (au plus toutes les 30 s) l'horodatage le plus haut d'un ordre signé accepté et le dernier numéro de séquence du flux de zones, pour qu'un redémarrage ne les oublie pas ; désactivé car cela écrit en flash |
 
 Les nouvelles sonneries après un silence sont limitées à 3 (`kMaxResounds`). Le relais de la sirène démarre ouvert à chaque redémarrage et ne retombe pas ouvert si le broker est perdu.
 
