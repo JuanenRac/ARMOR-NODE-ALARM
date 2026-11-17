@@ -55,6 +55,7 @@ bool g_siren_on = false;
 constexpr char kStateNamespace[] = "alarm_state";
 constexpr char kStateKey[] = "panel";
 constexpr char kEventsKey[] = "events";
+constexpr char kReplayKey[] = "replay";
 constexpr char kProfileKey[] = "profile";   // the arming profile the panel is armed with (JSON, as in the arm command), or "" for none
 // The options the server keeps for the panel (armor/alarm/<node>/policy) are kept in flash too, so the first thing a restart does is already under them; and the hash of the zones and the PIN the
 // saved state was saved under, so that a state is not given back to a panel whose zones or PIN are not the ones it was saved for (only when the option is on, see core/alarm_policy.hpp).
@@ -330,6 +331,7 @@ void alarm_task(void*) {
     writes = g_sup->plan_writes(now);
     }
     // flash is written outside the lock: a write can take tens of milliseconds
+    if (!writes.replay.empty() && write_key(kReplayKey, writes.replay)) { std::lock_guard<std::mutex> guard(g_lock); g_sup->replay_written(writes.replay, now); }
     if (!writes.events.empty() && write_key(kEventsKey, writes.events)) { std::lock_guard<std::mutex> guard(g_lock); g_sup->events_written(writes.events, now); }
     if (writes.profile) {
       if (write_key(kProfileKey, writes.profile_text)) { std::lock_guard<std::mutex> guard(g_lock); g_sup->profile_written(writes.profile_text); }
@@ -360,6 +362,7 @@ void start(const config::Settings& settings, Publish publish) {
     read_key(kPolicyKey, stored.policy, 256);
     read_key(kHashKey, stored.hash, 64);
     read_key(kEventsKey, stored.events, 1023);
+    read_key(kReplayKey, stored.replay, 63);
     const alarm::BootResult result = g_sup->boot(stored, now_ms());
     const alarm::Runner& runner = g_sup->runner();
     switch (result) {

@@ -124,7 +124,9 @@ inline std::string signature_of(std::string_view key_hex, std::string_view body)
 
 /// Checks a command that arrived. `wall_ms` is the time of the node in milliseconds since 1970, or 0 when its clock is not valid (then the freshness is not checked and the nonces
 /// alone stop a replay). The nonce is kept only once the signature is good, so a forged command cannot fill the memory.
-inline Verdict verify(std::string_view payload, std::string_view key_hex, NonceCache& cache, std::int64_t wall_ms) {
+/// `floor_ms` (0 = none) is the largest timestamp_ms of a command already taken, kept across a restart when the setting server.persist_replay_floor is on: a command that is not newer is stale, so a
+/// signed command recorded before the restart cannot be played again once the memory of nonces is empty.
+inline Verdict verify(std::string_view payload, std::string_view key_hex, NonceCache& cache, std::int64_t wall_ms, std::int64_t floor_ms = 0) {
   if (!key_is_valid(key_hex)) return Verdict::kNoKey;
   std::string body;
   std::string_view sig;
@@ -138,6 +140,7 @@ inline Verdict verify(std::string_view payload, std::string_view key_hex, NonceC
     const std::int64_t gap = stamp < 0 ? kFreshMs + 1 : (stamp > wall_ms ? stamp - wall_ms : wall_ms - stamp);
     if (gap > kFreshMs) return Verdict::kStale;
   }
+  if (floor_ms > 0 && timestamp_of(body) <= floor_ms) return Verdict::kStale;
   cache.remember(nonce);
   return Verdict::kOk;
 }

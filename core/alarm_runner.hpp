@@ -196,8 +196,9 @@ class Runner {
   Reply handle(const std::string& text, std::uint64_t now_ms, std::int64_t wall_ms = 0) {
     Reply reply;
     if (settings_.server.commands && !settings_.server.command_key.empty()) {
-      reply.verdict = command_sig::verify(text, settings_.server.command_key, nonces_, wall_ms);
+      reply.verdict = command_sig::verify(text, settings_.server.command_key, nonces_, wall_ms, settings_.server.persist_replay_floor ? command_floor_ms_ : 0);
       if (reply.verdict != command_sig::Verdict::kOk) { reply.signature_refused = true; return reply; }
+      if (const std::int64_t stamp = command_sig::timestamp_of(text); stamp > command_floor_ms_) command_floor_ms_ = stamp;
     }
     Command command;
     if (!settings_.server.commands || !parse_command(text, settings_.node_id, command)) return reply;
@@ -242,6 +243,28 @@ class Runner {
   }
 
   void set_epoch(std::int64_t epoch) { panel_.set_epoch(epoch); }
+
+  // What a restart must not forget about replays (setting server.persist_replay_floor): "<last zone-feed sequence>,<highest command timestamp>". Empty while the setting is off.
+  bool persist_replay_floor() const { return settings_.server.persist_replay_floor; }
+  std::string replay_text() const {
+    if (!settings_.server.persist_replay_floor) return std::string();
+    return std::to_string(last_feed_seq_) + "," + std::to_string(command_floor_ms_);
+  }
+  // Takes the text back; a record that cannot be read is ignored, and a value never lowers what the node already knows.
+  void restore_replay(const std::string& text) {
+    if (!settings_.server.persist_replay_floor) return;
+    const std::size_t comma = text.find(',');
+    if (comma == std::string::npos || comma == 0 || comma + 1 >= text.size() || text.size() > 40) return;
+    std::uint64_t seq = 0, floor = 0;
+    for (std::size_t i = 0; i < text.size(); ++i) {
+      if (i == comma) continue;
+      if (text[i] < '0' || text[i] > '9') return;
+      std::uint64_t& target = i < comma ? seq : floor;
+      target = target * 10 + static_cast<std::uint64_t>(text[i] - '0');
+    }
+    if (seq > last_feed_seq_) last_feed_seq_ = seq;
+    if (static_cast<std::int64_t>(floor) > command_floor_ms_) command_floor_ms_ = static_cast<std::int64_t>(floor);
+  }
   void restore_events(std::vector<Event> older) { panel_.restore_events(std::move(older)); }
   bool siren() const { return panel_.siren(); }
   bool siren_fire() const { return panel_.siren_fire(); }
@@ -300,6 +323,7 @@ class Runner {
   FeedVerdict last_feed_verdict_ = FeedVerdict::kAccepted;
   command_sig::NonceCache nonces_;   // the nonces of the last signed commands that verified (a repeat is a replay)
   std::uint64_t last_feed_seq_ = 0;
+  std::int64_t command_floor_ms_ = 0;   // the highest timestamp_ms of a signed command taken
   unsigned feeds_refused_ = 0;
   bool radio_ = false;
   std::uint64_t listening_since_ms_ = 0;

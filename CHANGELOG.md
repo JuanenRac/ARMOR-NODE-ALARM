@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The limits against replays can survive a restart:** a new setting, `server.persist_replay_floor` (off by default, shown in the web panel), keeps the highest timestamp of a signed command taken and the last sequence number of the zone feed in flash, at most every 30 seconds, and takes them back at start, so a recorded signed command cannot be played again after a restart.
+
 - **The simulation bench keeps a matrix of the faults it played:** the run writes a report of which fault of the bus passed, failed or was not run, prints it as one line of a bus-by-fault matrix in the summary of the run, and keeps both files as an artifact for two weeks. The matrix says what the simulated bus covered; it says nothing about the real equipment.
 
 - **The wrong PINs counted towards a lockout are kept across a restart:** a power cut between two guesses no longer gives a fresh set of tries. The saved state carries the count (never more than one short of a lockout), a right PIN clears it, and `panel.persist_wrong_pins` in the node panel (on by default) turns it off to keep the count in RAM only.

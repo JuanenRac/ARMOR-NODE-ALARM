@@ -401,7 +401,30 @@ static void test_timers() {
   CHECK(open.runner().arm(Mode::kAway, false, 200) == Refusal::kNotDisarmed);
 }
 
+static void test_replay_floor_is_written_sparingly_and_comes_back() {
+  config::Settings s = house();
+  s.server.persist_replay_floor = true;
+  alarm::Supervisor sup(s);
+  sup.boot(alarm::Stored{}, 0);
+  closed(sup, 0);
+  alarm::Writes w = sup.plan_writes(5000);
+  CHECK(w.replay == "0,0");   // the first record is written at once
+  sup.replay_written(w.replay, 5000);
+  CHECK(sup.plan_writes(5001).replay.empty());   // unchanged: nothing to write
+  alarm::Supervisor back(s);
+  alarm::Stored stored;
+  stored.replay = "9,123456";
+  back.boot(stored, 0);
+  CHECK(back.runner().replay_text() == "9,123456");
+  CHECK(back.plan_writes(5000).replay.empty());   // what flash holds already
+  // the setting off: nothing is asked for and nothing is taken back
+  alarm::Supervisor off(house());
+  off.boot(stored, 0);
+  CHECK(off.runner().replay_text().empty() && off.plan_writes(100000).replay.empty());
+}
+
 int main() {
+  test_replay_floor_is_written_sparingly_and_comes_back();
   test_nothing_saved();
   test_restore_armed_state();
   test_restore_with_profile();

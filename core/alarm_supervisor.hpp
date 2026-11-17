@@ -22,11 +22,12 @@
 namespace armor::alarm {
 
 constexpr std::uint64_t kPublishEveryMs = 5000;       // the state is said again this often, and at every change
+constexpr std::uint64_t kReplayWriteEveryMs = 30000;   // the floor against replays is written at most this often
 constexpr std::uint64_t kEventsWriteEveryMs = 30000;  // events that do not change the state of the house are written at most this often
 
 // What flash held at start ("" for what was not there or could not be read).
 struct Stored {
-  std::string state, profile, policy, hash, events;
+  std::string state, profile, policy, hash, events, replay;
 };
 
 // What the start decided, for the log.
@@ -50,7 +51,8 @@ struct Writes {
   bool profile = false;       // write `profile_text` ("" erases the profile)
   std::string profile_text;
   std::string events;
-  bool any() const { return !state.empty() || hash_only || profile || !events.empty(); }
+  std::string replay;         // the floor against replays (server.persist_replay_floor), at most every kReplayWriteEveryMs
+  bool any() const { return !state.empty() || hash_only || profile || !events.empty() || !replay.empty(); }
 };
 
 class Supervisor {
@@ -88,6 +90,7 @@ class Supervisor {
     }
     // What flash holds of the profile: the one armed with, or whatever was there and nobody uses (then the next turn erases it, so that a later arming without a profile cannot bring it back).
     saved_profile_ = runner_.profile() != nullptr ? profile_json(*runner_.profile()) : stored.profile;
+    if (!stored.replay.empty()) { runner_.restore_replay(stored.replay); saved_replay_ = stored.replay; }
     if (!stored.events.empty()) { saved_events_ = stored.events; runner_.restore_events(parse_events(stored.events)); }
     return result;
   }
@@ -120,8 +123,11 @@ class Supervisor {
     const bool important = !log.empty() && (log.back().kind == EventKind::kAlarm || log.back().kind == EventKind::kArmed || log.back().kind == EventKind::kDisarmed ||
                                              log.back().kind == EventKind::kLockedOut || log.back().kind == EventKind::kSirenSilenced);
     if (!events_now.empty() && events_now != saved_events_ && (important || now_ms - last_events_write_ms_ >= kEventsWriteEveryMs)) out.events = events_now;
+    const std::string replay_now = runner_.replay_text();
+    if (!replay_now.empty() && replay_now != saved_replay_ && (last_replay_write_ms_ == 0 || now_ms - last_replay_write_ms_ >= kReplayWriteEveryMs)) out.replay = replay_now;
     return out;
   }
+  void replay_written(const std::string& text, std::uint64_t now_ms) { saved_replay_ = text; last_replay_write_ms_ = now_ms == 0 ? 1 : now_ms; }
   void events_written(const std::string& text, std::uint64_t now_ms) { saved_events_ = text; last_events_write_ms_ = now_ms; }
   void profile_written(const std::string& text) { saved_profile_ = text; }
   void state_written(const std::string& text) { saved_state_ = text; }
@@ -151,9 +157,9 @@ class Supervisor {
  private:
   Runner runner_;
   std::string config_hash_;
-  std::string saved_state_, saved_profile_, saved_policy_, saved_hash_, saved_events_;
+  std::string saved_state_, saved_profile_, saved_policy_, saved_hash_, saved_events_, saved_replay_;
   std::string last_signature_;
-  std::uint64_t last_publish_ms_ = 0, last_events_write_ms_ = 0;
+  std::uint64_t last_publish_ms_ = 0, last_events_write_ms_ = 0, last_replay_write_ms_ = 0;
   bool forgotten_ = false;
 };
 
