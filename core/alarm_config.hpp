@@ -132,6 +132,9 @@ inline bool zone_feed_key_is_valid(std::string_view key) {
 struct ServerLink {
   bool commands = false;
   Choice config_hash = Choice::kPolicy, zone_feed = Choice::kPolicy, zone_signature = Choice::kPolicy;
+  // The message of the server that holds these options (armor/alarm/<node>/policy) and can lower the PIN or switch the signature off: "off" takes it as it comes (a signed one is still checked when
+  // there is a command key); "on" takes it only when it carries a good signature made with command_key; "policy" requires the signature as soon as the node holds a command key. Off by default.
+  Choice policy_signature = Choice::kOff;
   PinChoice disarm_pin = PinChoice::kPolicy;
   std::string zone_feed_key;   // 64 hexadecimal digits, from Studio (GET /api/v1/alarm/zone-feed/key/{node}); a secret like the PIN, never shown again
   bool persist_replay_floor = false;   // true: the highest timestamp of a signed command taken and the last sequence number of the zone feed are kept in flash (at most every 30 s), so that a restart does not forget them. Off by default: it writes flash
@@ -292,6 +295,7 @@ inline void read_settings(const json::Value& document, Settings& s, Problems& pr
     if (!read_choice<Choice>(*server, "config_hash", choices, s.server.config_hash)) bad(problems, "server.config_hash", "invalid");
     if (!read_choice<Choice>(*server, "zone_feed", choices, s.server.zone_feed)) bad(problems, "server.zone_feed", "invalid");
     if (!read_choice<Choice>(*server, "zone_signature", choices, s.server.zone_signature)) bad(problems, "server.zone_signature", "invalid");
+    if (!read_choice<Choice>(*server, "policy_signature", choices, s.server.policy_signature)) bad(problems, "server.policy_signature", "invalid");
     const std::initializer_list<std::pair<const char*, PinChoice>> pin_choices = {{"policy", PinChoice::kPolicy}, {"never", PinChoice::kNever}, {"if_set", PinChoice::kIfSet}, {"always", PinChoice::kAlways}};
     if (!read_choice<PinChoice>(*server, "disarm_pin", pin_choices, s.server.disarm_pin)) bad(problems, "server.disarm_pin", "invalid");
     read_secret(*server, "zone_feed_key", s.server.zone_feed_key, "server.zone_feed_key", problems);
@@ -381,6 +385,7 @@ inline Problems validate(const Settings& s) {
   if (s.server.commands && !s.mqtt.enabled) bad(problems, "server.commands", "needs_broker");
   if (!s.server.zone_feed_key.empty() && !zone_feed_key_is_valid(s.server.zone_feed_key)) bad(problems, "server.zone_feed_key", "invalid");
   if (!s.server.command_key.empty() && !zone_feed_key_is_valid(s.server.command_key)) bad(problems, "server.command_key", "invalid");
+  if (s.server.policy_signature == Choice::kOn && s.server.command_key.empty()) bad(problems, "server.command_key", "required");   // a policy nobody can check would never be taken
   if (s.server.zone_signature == Choice::kOn && s.server.zone_feed_key.empty()) bad(problems, "server.zone_feed_key", "required");   // a signature nobody can check would shut the feed for good
   // the radio the node may take over is the one on its board or a coordinator on the network
   const bool has_radio = s.zigbee.enabled || !s.zigbee.network_host.empty();
@@ -427,7 +432,7 @@ inline std::string to_json(const Settings& s, bool secrets) {
   w.key("radio_watch").begin_object().field("enabled", s.radio_watch.enabled).field("silence_s", static_cast<long long>(s.radio_watch.limits.silence_s))
       .field("min_sensors", static_cast<long long>(s.radio_watch.limits.min_sensors)).field("share_percent", static_cast<long long>(s.radio_watch.limits.share_percent))
       .field("hold_s", static_cast<long long>(s.radio_watch.limits.hold_s)).end_object();
-  w.key("server").begin_object().field("commands", s.server.commands).field("control_require_sig", s.server.control_require_sig).field("persist_replay_floor", s.server.persist_replay_floor).field("config_hash", to_text(s.server.config_hash)).field("zone_feed", to_text(s.server.zone_feed)).field("zone_signature", to_text(s.server.zone_signature)).field("disarm_pin", to_text(s.server.disarm_pin));
+  w.key("server").begin_object().field("commands", s.server.commands).field("control_require_sig", s.server.control_require_sig).field("persist_replay_floor", s.server.persist_replay_floor).field("config_hash", to_text(s.server.config_hash)).field("zone_feed", to_text(s.server.zone_feed)).field("zone_signature", to_text(s.server.zone_signature)).field("policy_signature", to_text(s.server.policy_signature)).field("disarm_pin", to_text(s.server.disarm_pin));
   if (secrets) w.field("zone_feed_key", s.server.zone_feed_key); else w.field("zone_feed_key_set", !s.server.zone_feed_key.empty());
   if (secrets) w.field("command_key", s.server.command_key); else w.field("command_key_set", !s.server.command_key.empty());
   w.end_object();

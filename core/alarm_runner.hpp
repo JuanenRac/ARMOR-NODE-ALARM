@@ -179,9 +179,15 @@ class Runner {
   }
 
   // The options the server keeps for this panel (armor/alarm/<node>/policy). A message that is not the contract's changes nothing. True when it was taken.
+  // With server.policy_signature the message must carry the signature of the server (the nonce and the signature are taken off before the contract is read); the message is kept by the broker, so
+  // its age is not checked: the signature stops a forged policy, and a nonce is taken once per start.
   bool handle_policy(const std::string& text) {
     Policy next;
-    if (!parse_policy(text, next)) return false;
+    const config::Choice mode = settings_.server.policy_signature;
+    const bool required = mode == config::Choice::kOn || (mode == config::Choice::kPolicy && command_sig::key_is_valid(settings_.server.command_key));
+    std::string plain;
+    if (!command_sig::control_authorized(required, settings_.server.command_key, text, nonces_, 0, plain)) return false;
+    if (!parse_policy(plain, next)) return false;
     policy_ = next;
     return true;
   }

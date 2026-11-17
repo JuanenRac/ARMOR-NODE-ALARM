@@ -144,7 +144,7 @@ extern "C" void app_main() {
     control.publish_retained = [](const std::string& topic, const std::string& payload) { armor::mqtt_link::publish_retained(topic, payload); };
     control.on_state = [](armor::control::State state) { armor::relay_outputs::hold_open(state != armor::control::State::kRunning); };   // paused or in standby: every relay is open and none moves
     // The orders to the node itself may need the same signature as the commands of the panel (server.control_require_sig); the nonces of the last ones are kept for the replay check.
-    control.authorize = [require = settings.server.control_require_sig, key = settings.server.command_key](const std::string& payload, std::string& plain) {
+    control.authorize = [require = settings.server.control_require_sig || settings.control_require_sig, key = settings.server.command_key](const std::string& payload, std::string& plain) {
       static armor::command_sig::NonceCache nonces;
       const std::int64_t wall = armor::mqtt_link::clock_is_set() ? static_cast<std::int64_t>(armor::mqtt_link::wall_clock_ms()) : 0;
       return armor::command_sig::control_authorized(require, key, payload, nonces, wall, plain);
