@@ -211,6 +211,11 @@ Die Host-Tests brauchen einen beliebigen C++17-Compiler (Linux, WSL, MSYS2); das
 
 Die meisten Prüfungen sind erschöpfende Durchläufe der Panel-Regeln; Schleifen, Sirene und Zigbee-Verbindung sind Ersatz.
 
+### Betrieb und Werkzeuge
+
+* **Simulationsbank:** der Workflow `simulation.yml` baut `tests/sim_bench.cpp` aus den Kerndateien der Firmware und spielt ihr die Spannung einer verdrahteten Alarmschleife vor, von ARMOR-SIMULATOR absichtlich gestört (`python -m armor_simulator.node_bench --bus alarm-loop`); weder eine Platine noch ESP-IDF sind beteiligt.
+* **Fehlermatrix:** der Lauf schreibt die Matrix Bus mal Fehler in seine Zusammenfassung und behält `bench-report.json` und `bench-matrix.txt` 14 Tage lang als Artefakt `bench-matrix`. Ein grüner Lauf sagt, dass der Code mit dem simulierten Bus zurechtkommt; über das echte Gerät sagt er nichts.
+
 ## 🏗️ Build und Veröffentlichung
 
 `tools/build_node.sh` baut das Image im ESP-IDF-5.5.5-Container, und die Version trägt das Image, sein SHA-256 und seine Ed25519-Signatur, je eines pro Platine; das Image wird beim ersten Mal per USB-C geschrieben und danach vom Panel aktualisiert.
