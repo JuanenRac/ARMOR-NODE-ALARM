@@ -212,7 +212,44 @@ static void test_the_orders_to_the_node_need_a_signature_when_asked_and_fail_clo
   }
 }
 
+static void test_the_floor_against_replays_survives_a_restart() {
+  config::Settings on = settings_with(kKey);
+  on.server.persist_replay_floor = true;
+  std::string kept;
+  {
+    alarm::Runner node(on);
+    CHECK(node.replay_text() == "0,0");
+    CHECK(node.handle(kDisarm, 0).understood);   // timestamp 1000001
+    kept = node.replay_text();
+    CHECK(kept == "0,1000001");
+  }
+  // a restart: the nonces are forgotten, the kept floor is not
+  alarm::Runner back(on);
+  back.restore_replay(kept);
+  alarm::Reply replayed = back.handle(kDisarm, 0);
+  CHECK(!replayed.understood && replayed.verdict == command_sig::Verdict::kStale);
+  alarm::Reply older = back.handle(kArm, 0);   // timestamp 1000000
+  CHECK(!older.understood && older.verdict == command_sig::Verdict::kStale);
+  // without the floor the same replay passes: that is why the setting exists
+  alarm::Runner without(settings_with(kKey));
+  CHECK(without.replay_text().empty() && without.handle(kDisarm, 0).understood);
+  alarm::Runner ignoring(settings_with(kKey));
+  ignoring.restore_replay(kept);
+  CHECK(ignoring.handle(kDisarm, 0).understood);
+  // a record that cannot be read changes nothing, and a value never lowers the floor
+  alarm::Runner junk(on);
+  for (const char* bad : {"", "x", "1,", ",2", "1,2x", "-1,5", "123456789012345678901234567890123456789012,5"}) junk.restore_replay(bad);
+  CHECK(junk.replay_text() == "0,0");
+  junk.restore_replay("7,50");
+  junk.restore_replay("3,10");
+  CHECK(junk.replay_text() == "7,50");
+  command_sig::NonceCache stale_cache, fresh;
+  CHECK(command_sig::verify(kDisarm, kKey, stale_cache, 0, 1000001) == command_sig::Verdict::kStale);
+  CHECK(command_sig::verify(kDisarm, kKey, fresh, 0, 1000000) == command_sig::Verdict::kOk);
+}
+
 int main() {
+  test_the_floor_against_replays_survives_a_restart();
   test_the_orders_to_the_node_need_a_signature_when_asked_and_fail_closed();
   test_the_vectors_verify_and_the_pieces_are_found();
   test_every_refusal();
