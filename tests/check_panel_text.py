@@ -60,7 +60,7 @@ def check_panel_features(table, problems):
     if '"system.login_limit_per_minute"' not in app:
         problems.append("the System page does not offer system.login_limit_per_minute")
     if "server.zone_feed_key" in app:   # the options the server keeps for the panel, and the key of its zone messages
-        for key in ("panelSecurityTitle", "panelSecurityHelp", "panelOptHash", "panelOptFeed", "panelOptSignature", "choicePolicy", "choiceOn", "choiceOff", "panelFeedKey", "panelFeedKeyHint", "panelFeedKeySet", "panelFeedKeyClear"):
+        for key in ("panelSecurityTitle", "panelSecurityHelp", "panelOptHash", "panelOptFeed", "panelOptSignature", "panelOptPolicySig", "choicePolicy", "choiceOn", "choiceOff", "panelFeedKey", "panelFeedKeyHint", "panelFeedKeySet", "panelFeedKeyClear"):
             if key not in table:
                 problems.append(f"the panel has no text {key}")
         if 'type: "password"' not in app.split("function feedKeyField(", 1)[-1][:600]:

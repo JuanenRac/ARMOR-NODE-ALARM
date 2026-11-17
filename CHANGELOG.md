@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The policy message of the server can be required to be signed:** the new setting `server.policy_signature` (`off` by default, `policy` or `on`, shown in the web panel in eight languages) makes the panel read `armor/alarm/<node>/policy` only when it carries a good signature made with `command_key`, so a message on the broker cannot lower the PIN or switch the signature off. With `on` and no key the settings are refused.
+
+- **The signature code is the shared one:** `core/command_sig.hpp` and `core/hmac_sha256.hpp` come from the shared firmware base. The shared setting `security.control_require_sig` (off by default) also makes the orders to the node itself require the signature, like `server.control_require_sig`.
+
 - **The limits against replays can survive a restart:** a new setting, `server.persist_replay_floor` (off by default, shown in the web panel), keeps the highest timestamp of a signed command taken and the last sequence number of the zone feed in flash, at most every 30 seconds, and takes them back at start, so a recorded signed command cannot be played again after a restart.
 
 - **The simulation bench keeps a matrix of the faults it played:** the run writes a report of which fault of the bus passed, failed or was not run, prints it as one line of a bus-by-fault matrix in the summary of the run, and keeps both files as an artifact for two weeks. The matrix says what the simulated bus covered; it says nothing about the real equipment.

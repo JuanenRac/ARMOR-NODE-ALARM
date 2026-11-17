@@ -248,7 +248,52 @@ static void test_the_floor_against_replays_survives_a_restart() {
   CHECK(command_sig::verify(kDisarm, kKey, fresh, 0, 1000000) == command_sig::Verdict::kOk);
 }
 
+// The policy of the server, signed the way the server signs a command: the nonce is the last field of the body and the signature goes after it.
+static std::string signed_policy(const char* nonce, const char* key, bool config_hash) {
+  const std::string body = std::string("{\"config_hash\":") + (config_hash ? "true" : "false") + ",\"zone_feed\":false,\"zone_feed_signature\":false,\"nonce\":\"" + nonce + "\"}";
+  return body.substr(0, body.size() - 1) + ",\"sig\":\"" + command_sig::signature_of(key, body) + "\"}";
+}
+
+static void test_the_policy_is_taken_signed_when_asked() {
+  const std::string plain = "{\"config_hash\":true,\"zone_feed\":false,\"zone_feed_signature\":false}";
+  {   // off (the default): the message is taken as it comes; a signed one is still checked
+    alarm::Runner node(settings_with(kKey));
+    CHECK(node.handle_policy(plain));
+    CHECK(!node.handle_policy(signed_policy("0123456789abcdef", kOtherKey, true)));
+    CHECK(node.handle_policy(signed_policy("0123456789abcdef", kKey, true)));
+  }
+  {   // on: only a good signature is taken; an unsigned, forged or repeated one is not, and a node without a key takes nothing
+    config::Settings s = settings_with(kKey);
+    s.server.policy_signature = config::Choice::kOn;
+    alarm::Runner node(s);
+    CHECK(!node.handle_policy(plain));
+    CHECK(!node.handle_policy(signed_policy("0123456789abcdef", kOtherKey, true)));
+    CHECK(node.handle_policy(signed_policy("0123456789abcdef", kKey, true)) && node.policy().config_hash);
+    CHECK(!node.handle_policy(signed_policy("0123456789abcdef", kKey, true)));   // the same message again is a replay
+    CHECK(node.handle_policy(signed_policy("fedcba9876543210", kKey, false)) && !node.policy().config_hash);
+    config::Settings keyless = settings_with("");
+    keyless.server.policy_signature = config::Choice::kOn;
+    alarm::Runner without(keyless);
+    CHECK(!without.handle_policy(plain) && !without.handle_policy(signed_policy("0123456789abcdef", kKey, true)));
+    bool refused = false;
+    for (const config::Problem& problem : config::validate(keyless)) if (problem.path == "server.command_key" && problem.code == "required") refused = true;
+    CHECK(refused);
+  }
+  {   // policy: required as soon as the node holds a key, free while it does not
+    config::Settings s = settings_with(kKey);
+    s.server.policy_signature = config::Choice::kPolicy;
+    alarm::Runner node(s);
+    CHECK(!node.handle_policy(plain) && node.handle_policy(signed_policy("0123456789abcdef", kKey, true)));
+    config::Settings keyless = settings_with("");
+    keyless.server.policy_signature = config::Choice::kPolicy;
+    alarm::Runner without(keyless);
+    CHECK(without.handle_policy(plain));
+  }
+  CHECK(config::to_json(settings_with(kKey), false).find("\"policy_signature\":\"off\"") != std::string::npos);
+}
+
 int main() {
+  test_the_policy_is_taken_signed_when_asked();
   test_the_floor_against_replays_survives_a_restart();
   test_the_orders_to_the_node_need_a_signature_when_asked_and_fail_closed();
   test_the_vectors_verify_and_the_pieces_are_found();
