@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The simulation bench keeps a matrix of the faults it played:** the run writes a report of which fault of the bus passed, failed or was not run, prints it as one line of a bus-by-fault matrix in the summary of the run, and keeps both files as an artifact for two weeks. The matrix says what the simulated bus covered; it says nothing about the real equipment.
+
 - **The wrong PINs counted towards a lockout are kept across a restart:** a power cut between two guesses no longer gives a fresh set of tries. The saved state carries the count (never more than one short of a lockout), a right PIN clears it, and `panel.persist_wrong_pins` in the node panel (on by default) turns it off to keep the count in RAM only.
 - **The copy of the running firmware to the other slot waits for an install or a manual write that is on:** `start_copy()` takes the same lock as `install()` and the manual writes (not only the flag of its own job) and gives it back when it ends, so two writers can no longer open the same slot.
 - **The manual firmware upload and the change of boot slot take the same lock as an installation from GitHub and a copy of the slot:** only one of them writes or reads the slot at a time (a second one is answered `409 ota_busy`), and the buffers of the upload and of the slot check are no longer shared between the two web servers. Before, an upload could overlap another writer or an upload through the other server and end in a corrupt image. Not run on a board; the build is checked in CI.
