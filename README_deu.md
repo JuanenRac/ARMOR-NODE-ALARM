@@ -180,6 +180,7 @@ Dies ist kein zertifiziertes Alarmsystem ([docs/SAFETY.md](docs/SAFETY.md)): Es 
 | `siren_loop.enabled` | off | Die Verkabelung der Sirene überwachen: Ein Analogpin liest die Rückleseleitung der Sirene, und die Zustandsmeldung enthält `siren_loop` und `siren_fault` (unterbrochen, kurzgeschlossen oder nicht lesbar); noch keine Platine hat den Rückleseeingang |
 | `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | Der Rückleseanschluss, die Millivolt, unter denen die Leitung kurzgeschlossen ist und bis zu denen die Sirene da ist (darüber ist die Leitung unterbrochen), die Zeit, die ein Messwert halten muss, um eine Störung zu melden oder aufzuheben (100-60000 ms), und ob die Leitung auch gelesen wird, während die Sirene ertönt |
 | `siren_loop.block_arming` | off | Scharfschalten ohne `force` verweigern, solange die Verkabelung der Sirene gestört ist (wie bei einer offenen Zone); die Störung wird in jedem Fall gemeldet |
+| `server.persist_replay_floor` | off | Den höchsten Zeitstempel eines angenommenen signierten Befehls und die letzte Sequenznummer des Zonenfeeds (höchstens alle 30 s) im Flash behalten, damit ein Neustart sie nicht vergisst; aus, weil es den Flash beschreibt |
 
 Erneutes Auslösen nach einem Stummschalten ist auf 3 begrenzt (`kMaxResounds`). Das Sirenenrelais startet bei jedem Neustart offen und fällt nicht auf offen, wenn der Broker verloren geht.
 

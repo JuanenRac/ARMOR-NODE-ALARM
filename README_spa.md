@@ -180,6 +180,7 @@ No es un sistema de alarma certificado ([docs/SAFETY.md](docs/SAFETY.md)): es un
 | `siren_loop.enabled` | off | Supervisar el cableado de la sirena: un pin analógico lee la línea de retorno de la sirena y el mensaje de estado lleva `siren_loop` y `siren_fault` (cortado, en cortocircuito o ilegible); ninguna placa tiene aún la entrada de retorno |
 | `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | El pin de retorno, los milivoltios por debajo de los cuales el cable está en cortocircuito y hasta los cuales la sirena está (por encima el cable está cortado), el tiempo que una lectura debe mantenerse para avisar o quitar un fallo (100-60000 ms) y si la línea también se lee mientras suena la sirena |
 | `siren_loop.block_arming` | off | Rechazar armar sin `force` mientras el cableado de la sirena esté en fallo (como con una zona abierta); el fallo se avisa en cualquier caso |
+| `server.persist_replay_floor` | off | Guardar en flash (como mucho cada 30 s) la marca de tiempo más alta de una orden firmada aceptada y el último número de secuencia de la fuente de zonas, para que un reinicio no los olvide; apagado porque escribe en flash |
 
 Los resonidos tras un silencio se limitan a 3 (`kMaxResounds`). El relé de la sirena arranca abierto en cada reinicio y no cae a abierto si se pierde el broker.
 

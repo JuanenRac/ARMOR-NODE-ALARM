@@ -180,6 +180,7 @@ This is not a certified alarm system ([docs/SAFETY.md](docs/SAFETY.md)): it is a
 | `siren_loop.enabled` | off | Supervise the siren's wiring: an analog pin reads the siren's return line and the state message carries `siren_loop` and `siren_fault` (cut, shorted or unreadable); no board has the return input yet |
 | `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | The return pin, the millivolts below which the wire is shorted and up to which the siren is there (above it the wire is cut), the time a reading must hold to report or lift a fault (100-60000 ms) and whether the line is also read while the siren sounds |
 | `siren_loop.block_arming` | off | Refuse to arm without `force` while the siren's wiring is in fault (as with an open zone); the fault is reported either way |
+| `server.persist_replay_floor` | off | Keep in flash (at most every 30 s) the highest timestamp of a signed command taken and the last sequence number of the zone feed, so that a restart does not forget them; off because it writes flash |
 
 Re-sounds after a silence are limited to 3 (`kMaxResounds`). The siren relay starts open on every restart and does not fall open when the broker is lost.
 
