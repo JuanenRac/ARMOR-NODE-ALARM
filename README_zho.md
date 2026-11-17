@@ -211,6 +211,11 @@ Python 检查：八种语言的面板文字、任务、保存路径、受锁保�
 
 大部分检查是对面板规则的穷举遍历；回路、警笛和 Zigbee 连接都是替身。
 
+### 运维与工具
+
+* **仿真台架：** 工作流 `simulation.yml` 用固件核心文件构建 `tests/sim_bench.cpp`，并向其输入由 ARMOR-SIMULATOR 故意破坏的有线报警回路的电压（`python -m armor_simulator.node_bench --bus alarm-loop`）；不涉及任何开发板，也不使用 ESP-IDF。
+* **故障矩阵：** 运行会把“总线 × 故障”矩阵写入摘要，并将 `bench-report.json` 和 `bench-matrix.txt` 作为工件 `bench-matrix` 保留 14 天。绿色的运行只说明代码能应对模拟总线，并不说明真实设备的情况。
+
 ## 🏗️ 构建与发布
 
 `tools/build_node.sh` 在 ESP-IDF 5.5.5 容器中构建镜像，发布版带有镜像、其 SHA-256 和 Ed25519 签名，每块电路板一份；镜像第一次通过 USB-C 写入，之后从面板更新。

@@ -211,6 +211,11 @@ Os testes de anfitrião precisam de qualquer compilador C++17 (Linux, WSL, MSYS2
 
 A maior parte das verificações são varrimentos exaustivos das regras da central; os laços, a sirene e a ligação Zigbee são substitutos.
 
+### Operação e ferramentas
+
+* **Banco de simulação:** o workflow `simulation.yml` compila `tests/sim_bench.cpp` com os ficheiros do núcleo do firmware e reproduz-lhe a tensão de um laço de alarme cablado, estragada de propósito pelo ARMOR-SIMULATOR (`python -m armor_simulator.node_bench --bus alarm-loop`); não intervêm placa nem ESP-IDF.
+* **Matriz de falhas:** a execução escreve no seu resumo a matriz de bus por falha e guarda `bench-report.json` e `bench-matrix.txt` durante 14 dias como o artefacto `bench-matrix`. Uma execução verde diz que o código aguenta o bus simulado; não diz nada do equipamento real.
+
 ## 🏗️ Compilação e publicação
 
 `tools/build_node.sh` compila a imagem no contentor ESP-IDF 5.5.5 e a versão leva a imagem, o seu SHA-256 e a sua assinatura Ed25519, uma por placa; a imagem grava-se por USB-C da primeira vez e depois atualiza-se a partir do painel.

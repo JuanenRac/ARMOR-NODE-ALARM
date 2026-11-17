@@ -211,6 +211,11 @@ I test su host richiedono un qualsiasi compilatore C++17 (Linux, WSL, MSYS2); il
 
 La maggior parte delle verifiche sono scansioni esaustive delle regole della centrale; anelli, sirena e collegamento Zigbee sono sostituti.
 
+### Operatività e strumenti
+
+* **Banco di simulazione:** il workflow `simulation.yml` compila `tests/sim_bench.cpp` con i file del nucleo del firmware e gli riproduce la tensione di un anello d'allarme cablato, guastata apposta da ARMOR-SIMULATOR (`python -m armor_simulator.node_bench --bus alarm-loop`); non intervengono né una scheda né ESP-IDF.
+* **Matrice dei guasti:** l'esecuzione scrive nel riepilogo la matrice bus per guasto e conserva `bench-report.json` e `bench-matrix.txt` per 14 giorni come artefatto `bench-matrix`. Un'esecuzione verde dice che il codice regge il bus simulato; non dice nulla dell'apparecchiatura reale.
+
 ## 🏗️ Compilazione e rilascio
 
 `tools/build_node.sh` costruisce l'immagine nel container ESP-IDF 5.5.5 e la versione porta l'immagine, il suo SHA-256 e la sua firma Ed25519, una per scheda; l'immagine si scrive via USB-C la prima volta e poi si aggiorna dal pannello.
