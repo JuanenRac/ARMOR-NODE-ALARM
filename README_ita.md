@@ -248,7 +248,7 @@ ARMOR-NODE-ALARM/
 ├── docs/                                11 guide: sicurezza, messaggi, Zigbee, subentro
 ├── tools/                               strumenti di build, impacchettamento e verifica
 ├── .github/                             workflow CI e modelli per issue e pull request
-├── images/                              banner, icona e le due immagini di questo README
+├── images/                              banner, icona, immagini del README, schermate
 ├── build.sh build.bat                   build tramite il flusso di progetto condiviso
 ├── test.sh test.bat                     eseguire i test tramite il flusso condiviso
 ├── run.sh run.bat                       avvio tramite il flusso di progetto condiviso
