@@ -248,7 +248,7 @@ ARMOR-NODE-ALARM/
 ├── docs/                                11 のガイド：安全、メッセージ、Zigbee、フェイルオーバー
 ├── tools/                               ビルド・パッケージ・検査のツール
 ├── .github/                             CI ワークフローと Issue・Pull Request のテンプレート
-├── images/                              バナー、アイコン、この README の 2 つの図
+├── images/                              バナー、アイコン、README の図、スクリーンショット
 ├── build.sh build.bat                   共通のプロジェクトワークフローでビルド
 ├── test.sh test.bat                     共通のワークフローでテストを実行
 ├── run.sh run.bat                       共通のプロジェクトワークフローで起動
