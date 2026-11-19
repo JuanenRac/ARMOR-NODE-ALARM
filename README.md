@@ -62,7 +62,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Protocols and data | 🟠 | The node's own Zigbee conversation with a coordinator, local or on the network, is tested only against a stand-in coordinator; it has never met a real coordinator or sensor. |
 | Interface | 🟡 | The web panel is exercised in a real browser against a stand-in node, not on a board. |
 | Hardware | 🔴 | No board built, no zone wired and no siren or Zigbee coordinator connected: nothing has run on a real installation. |
-| Security | 🟡 | The PIN with lockout, the set-up code, the login limit and the signed updates are tested on the host; there has been no independent review and this is not a certified alarm system. |
+| Security | 🟠 | The PIN with lockout, the set-up code, the login limit and the signed updates are tested on the host; there has been no independent review and this is not a certified alarm system. |
 | Updates | 🟠 | The hash and Ed25519 signature checks and the rollback logic pass on the host; an update over the air has never been run on a board. |
 | Writing to equipment | 🟠 | The siren and the relays are driven by the alarm rules and tested against stand-ins; none has been connected to a real siren or relay. |
 | Integration | 🟠 | The messages of the node are validated against the shared schemas and conformance vectors of ARMOR-COMMON. Its MQTT client is played against a real Mosquitto in the tests; no board has sent them to a server yet. |
