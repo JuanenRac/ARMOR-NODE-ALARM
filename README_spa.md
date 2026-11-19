@@ -62,7 +62,7 @@ Cada línea es una parte de este repositorio y la luz dice hasta dónde llega ho
 | Protocolos y datos | 🟠 | La conversación Zigbee del propio nodo con un coordinador, local o en la red, solo se ha probado contra un coordinador simulado; nunca se ha encontrado con un coordinador o un sensor reales. |
 | Interfaz | 🟡 | El panel web se ha ejercitado en un navegador real contra un nodo simulado, no en una placa. |
 | Hardware | 🔴 | Ninguna placa construida, ninguna zona cableada y ninguna sirena o coordinador Zigbee conectados: nada ha funcionado en una instalación real. |
-| Seguridad | 🟡 | El PIN con bloqueo, el código de configuración, el límite de accesos y las actualizaciones firmadas están probados en el host; no ha habido una revisión independiente y esto no es un sistema de alarma certificado. |
+| Seguridad | 🟠 | El PIN con bloqueo, el código de configuración, el límite de accesos y las actualizaciones firmadas están probados en el host; no ha habido una revisión independiente y esto no es un sistema de alarma certificado. |
 | Actualizaciones | 🟠 | Las comprobaciones de hash y de firma Ed25519 y la lógica de vuelta atrás pasan en el host; una actualización por aire nunca se ha ejecutado en una placa. |
 | Escritura en los equipos | 🟠 | La sirena y los relés los gobiernan las reglas de la alarma y se han probado contra simulaciones; ninguno se ha conectado a una sirena o un relé reales. |
 | Integración | 🟠 | Los mensajes del nodo se validan contra los esquemas compartidos y los vectores de conformidad de ARMOR-COMMON. Su cliente MQTT se prueba contra un Mosquitto real en los tests; ninguna placa los ha enviado aún a un servidor. |

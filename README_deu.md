@@ -62,7 +62,7 @@ Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heut
 | Protokolle und Daten | 🟠 | Die Zigbee-Kommunikation des Knotens selbst mit einem Koordinator, lokal oder im Netz, ist nur gegen einen nachgebildeten Koordinator getestet; sie ist nie auf einen echten Koordinator oder Sensor getroffen. |
 | Oberfläche | 🟡 | Das Web-Panel wurde in einem echten Browser gegen einen nachgebildeten Knoten erprobt, nicht auf einer Platine. |
 | Hardware | 🔴 | Keine Platine gebaut, keine Zone verdrahtet und weder Sirene noch Zigbee-Koordinator angeschlossen: Bisher lief nichts an einer echten Anlage. |
-| Sicherheit | 🟡 | Die PIN mit Sperre, der Einrichtungscode, die Anmeldebegrenzung und die signierten Aktualisierungen sind auf dem Host getestet; es gab keine unabhängige Prüfung, und dies ist kein zertifiziertes Alarmsystem. |
+| Sicherheit | 🟠 | Die PIN mit Sperre, der Einrichtungscode, die Anmeldebegrenzung und die signierten Aktualisierungen sind auf dem Host getestet; es gab keine unabhängige Prüfung, und dies ist kein zertifiziertes Alarmsystem. |
 | Aktualisierungen | 🟠 | Die Hash- und Ed25519-Signaturprüfungen und die Rückfalllogik bestehen auf dem Host; eine Aktualisierung über die Luft wurde nie auf einer Platine ausgeführt. |
 | Schreiben auf Geräte | 🟠 | Die Sirene und die Relais werden von den Alarmregeln gesteuert und gegen Nachbildungen getestet; keines wurde an eine echte Sirene oder ein echtes Relais angeschlossen. |
 | Integration | 🟠 | Die Nachrichten des Knotens werden gegen die gemeinsamen Schemas und Konformitätsvektoren von ARMOR-COMMON geprüft. Sein MQTT-Client wird in den Tests gegen einen echten Mosquitto gespielt; noch keine Platine hat sie an einen Server geschickt. |
