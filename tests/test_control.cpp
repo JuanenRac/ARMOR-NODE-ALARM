@@ -222,12 +222,12 @@ static void test_the_answers_are_the_ones_of_the_vectors(const std::string& dir)
     const json::Value* names = list != nullptr ? list->get("enum") : nullptr;
     CHECK(names != nullptr);
     for (const Refusal r : {Refusal::kNone, Refusal::kNotArmed, Refusal::kInvalidToken, Refusal::kTokenExpired, Refusal::kRateLimited, Refusal::kAlreadyRestarting, Refusal::kAlreadyInState,
-                            Refusal::kBusyUpdate, Refusal::kBusyUpload, Refusal::kBusySlotCopy, Refusal::kBusyBattery, Refusal::kUnavailable}) {
+                            Refusal::kBusyUpdate, Refusal::kBusyUpload, Refusal::kBusySlotCopy, Refusal::kBusyBattery, Refusal::kBusyGuarding, Refusal::kUnavailable}) {
       bool found = false;
       if (names != nullptr) for (const json::Value& item : names->items) found = found || item.text == control::refusal_name(r);
       CHECK(found);
     }
-    CHECK(names != nullptr && names->items.size() == 12);
+    CHECK(names != nullptr && names->items.size() == 13);
   }
   // and the operations of the command schema are exactly the ones of the node
   json::Value command_schema;
@@ -485,7 +485,7 @@ static void test_the_rate_limit_is_for_a_restart() {
   CHECK(quick.arm(1100, kUp, Operation::kIdentify, Busy::kNone, kRunning, kOther).refusal == Refusal::kNone);
 }
 
-// A panel that guards (server.refuse_pause_armed): it may restart, what was armed survives it, but it does not stop watching.
+// A node that guards (an alarm panel): it may restart, what was armed survives it, but it does not stop watching.
 static void test_a_guarding_panel_refuses_to_stop_watching() {
   CHECK(std::string(control::refusal_name(Refusal::kBusyGuarding)) == "busy_guarding");
   for (const Operation o : kAll) {
