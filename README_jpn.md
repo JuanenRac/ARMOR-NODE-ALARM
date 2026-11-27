@@ -23,7 +23,7 @@
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
   <img src="https://img.shields.io/badge/Tests-33%20host%20programs-2ea44f.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/Version-0.6.1-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.6.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
 </p>
 
@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| バージョン | `0.6.1` |
+| バージョン | `0.6.2` |
 | 成熟度 | 機能する |
 | 役割 | ESP32-S3 用アラームパネルのフィールドノード（ファミリー：Field Nodes、親：ARMOR-COMMON） |
 | 技術 | C++17, ESP-IDF 5.5.5, ESP32-S3 |
@@ -181,6 +181,7 @@ ARMOR-NODE-ALARM は警報盤です。警戒区域、警戒、遅延、サイレ
 | `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | 戻りピン、配線が短絡と判定するミリボルト未満の値とサイレンありと判定する上限（それを超えると断線）、故障を報告・解除するために読み取りが続くべき時間（100〜60000 ms）、サイレンが鳴っている間も読むかどうか |
 | `siren_loop.block_arming` | off | サイレンの配線が故障している間は `force` なしの警戒開始を拒否します（開いたゾーンと同じ）。故障はどちらの場合も報告されます |
 | `server.persist_replay_floor` | off | 受理した署名付きコマンドの最大タイムスタンプとゾーンフィードの最後のシーケンス番号をフラッシュに保存します（最長 30 秒ごと）。再起動後も忘れませんが、フラッシュに書き込むため既定は無効です |
+| `server.refuse_pause_armed` | on | パネルが警戒中、カウントダウン中または鳴動中は、サーバーからの `pause` と `standby` を拒否します（`busy_guarding`）。再起動は引き続き受け付けます。`false` で保存された設定は維持されます。無効にするには、パネルで「警戒中の一時停止を拒否する」のチェックを外し、保存して再起動します。基板では未検証です |
 
 サイレン停止後の再鳴動は 3 回までです（`kMaxResounds`）。サイレンのリレーは再起動のたびに開いた状態で始まり、ブローカーを失っても開きません。
 

@@ -23,7 +23,7 @@
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
   <img src="https://img.shields.io/badge/Tests-33%20host%20programs-2ea44f.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/Version-0.6.1-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.6.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturité">
 </p>
 
@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Version | `0.6.1` |
+| Version | `0.6.2` |
 | Maturité | Fonctionnel |
 | Rôle | Nœud de terrain centrale d'alarme pour ESP32-S3 (famille : Field Nodes, parent : ARMOR-COMMON) |
 | Technologie | C++17, ESP-IDF 5.5.5, ESP32-S3 |
@@ -181,6 +181,7 @@ Ce n'est pas un système d'alarme certifié ([docs/SAFETY.md](docs/SAFETY.md)) :
 | `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | La broche de retour, les millivolts sous lesquels le fil est en court-circuit et jusqu'auxquels la sirène est là (au-dessus le fil est coupé), le temps qu'une lecture doit tenir pour signaler ou lever un défaut (100-60000 ms) et si la ligne est aussi lue pendant que la sirène sonne |
 | `siren_loop.block_arming` | off | Refuser d'armer sans `force` tant que le câblage de la sirène est en défaut (comme avec une zone ouverte) ; le défaut est signalé dans tous les cas |
 | `server.persist_replay_floor` | off | Garder en flash (au plus toutes les 30 s) l'horodatage le plus haut d'un ordre signé accepté et le dernier numéro de séquence du flux de zones, pour qu'un redémarrage ne les oublie pas ; désactivé car cela écrit en flash |
+| `server.refuse_pause_armed` | on | Refuser une `pause` ou un `standby` ordonné par le serveur tant que la centrale est armée, en compte à rebours ou sonne (`busy_guarding`) ; le redémarrage reste accepté. Les réglages enregistrés avec `false` sont conservés ; pour le désactiver, décocher *Refuser la pause quand c'est armé* dans le panneau, enregistrer et redémarrer. Non essayé sur une carte |
 
 Les nouvelles sonneries après un silence sont limitées à 3 (`kMaxResounds`). Le relais de la sirène démarre ouvert à chaque redémarrage et ne retombe pas ouvert si le broker est perdu.
 

@@ -40,7 +40,7 @@ const config = {
   buttons: Array.from({ length: 4 }, () => ({ enabled: false, action: "arm_away", pin: -1 })),
   loop: { short_below_mv: 400, normal_below_mv: 1200, triggered_below_mv: 2400 },
   panel: { exit_delay_s: 10, entry_delay_s: 10, siren_max_s: 60, lockout_after: 3, lockout_s: 30, siren_relay: "siren", pin_set: true },
-  server: { commands: false, config_hash: "policy", zone_feed: "policy", zone_signature: "policy", disarm_pin: "policy", zone_feed_key_set: false },
+  server: { commands: false, refuse_pause_armed: true, config_hash: "policy", zone_feed: "policy", zone_signature: "policy", disarm_pin: "policy", zone_feed_key_set: false },
   zigbee_local: { bridge_state_topic: "", after_s: 0, sirens: [] },
   walk_test: { enabled: false, seconds: 300 },
   keypad: { enabled: false, idle_s: 10, max_digits: 8 },

@@ -145,6 +145,33 @@ static void test_document() {
   CHECK(config::load("{\"v\":1,\"sta\":{\"enabled\":true,\"ssid\":\"casa\",\"password\":\"una-clave-larga\"}}", config::default_settings("a1b2c3"), edited, problems) && !edited.zones[0].enabled && !edited.server.commands);
 }
 
+// server.refuse_pause_armed is on by default: a node whose stored settings do not hold the key gets it, one that holds `false` keeps it.
+static void test_refuse_pause_armed_default() {
+  const config::Settings fresh = config::default_settings("a1b2c3");
+  CHECK(fresh.server.refuse_pause_armed);
+  CHECK(contains(config::to_json(fresh, true), "\"refuse_pause_armed\":true") && contains(config::to_json(fresh, false), "\"refuse_pause_armed\":true"));
+  const config::Settings base = valid_settings();   // a document that passes the checks on either board
+  CHECK(base.server.refuse_pause_armed);
+  config::Settings loaded; config::Problems problems;
+  // stored settings without the key (no server section at all, or one written before the setting existed)
+  for (const char* older : {"{}", "{\"server\":{\"commands\":false}}"}) {
+    problems.clear();
+    CHECK(config::load_stored(older, base, loaded, problems) && loaded.server.refuse_pause_armed);
+  }
+  // turned off: the choice is read, stored and read again, and a document that does not name the key leaves it
+  problems.clear();
+  CHECK(config::load_stored("{\"server\":{\"refuse_pause_armed\":false}}", base, loaded, problems) && !loaded.server.refuse_pause_armed);
+  const config::Settings off = loaded;
+  config::Settings again;
+  problems.clear();
+  CHECK(config::load_stored(config::to_json(off, true), base, again, problems) && !again.server.refuse_pause_armed);
+  problems.clear();
+  CHECK(config::load("{\"server\":{\"commands\":false}}", off, again, problems) && !again.server.refuse_pause_armed);
+  // and turned on again
+  problems.clear();
+  CHECK(config::load("{\"server\":{\"refuse_pause_armed\":true}}", off, again, problems) && again.server.refuse_pause_armed);
+}
+
 // ---- the messages --------------------------------------------------------------------------------------------------------------------
 
 static void test_state_and_commands() {
@@ -468,6 +495,7 @@ int main() {
   test_zones();
   test_panel_settings();
   test_document();
+  test_refuse_pause_armed_default();
   test_state_and_commands();
   test_runner();
   test_debounce_and_tamper();

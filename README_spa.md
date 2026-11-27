@@ -23,7 +23,7 @@
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
   <img src="https://img.shields.io/badge/Tests-33%20host%20programs-2ea44f.svg" alt="Pruebas">
-  <img src="https://img.shields.io/badge/Version-0.6.1-0f6cbd.svg" alt="Versión">
+  <img src="https://img.shields.io/badge/Version-0.6.2-0f6cbd.svg" alt="Versión">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Madurez">
 </p>
 
@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Versión | `0.6.1` |
+| Versión | `0.6.2` |
 | Madurez | Funcional |
 | Función | Nodo de campo central de alarma para ESP32-S3 (familia: Field Nodes, padre: ARMOR-COMMON) |
 | Tecnología | C++17, ESP-IDF 5.5.5, ESP32-S3 |
@@ -181,6 +181,7 @@ No es un sistema de alarma certificado ([docs/SAFETY.md](docs/SAFETY.md)): es un
 | `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | El pin de retorno, los milivoltios por debajo de los cuales el cable está en cortocircuito y hasta los cuales la sirena está (por encima el cable está cortado), el tiempo que una lectura debe mantenerse para avisar o quitar un fallo (100-60000 ms) y si la línea también se lee mientras suena la sirena |
 | `siren_loop.block_arming` | off | Rechazar armar sin `force` mientras el cableado de la sirena esté en fallo (como con una zona abierta); el fallo se avisa en cualquier caso |
 | `server.persist_replay_floor` | off | Guardar en flash (como mucho cada 30 s) la marca de tiempo más alta de una orden firmada aceptada y el último número de secuencia de la fuente de zonas, para que un reinicio no los olvide; apagado porque escribe en flash |
+| `server.refuse_pause_armed` | on | Rechazar una `pause` o un `standby` ordenados por el servidor con el panel armado, en cuenta atrás o sonando (`busy_guarding`); el reinicio se sigue aceptando. Los ajustes guardados con `false` se mantienen; para apagarlo, desmarcar *Rechazar la pausa estando armado* en el panel, guardar y reiniciar. Sin probar en placa |
 
 Los resonidos tras un silencio se limitan a 3 (`kMaxResounds`). El relé de la sirena arranca abierto en cada reinicio y no cae a abierto si se pierde el broker.
 

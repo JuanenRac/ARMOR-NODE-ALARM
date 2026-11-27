@@ -23,7 +23,7 @@
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
   <img src="https://img.shields.io/badge/Tests-33%20host%20programs-2ea44f.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/Version-0.6.1-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.6.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Reifegrad">
 </p>
 
@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Version | `0.6.1` |
+| Version | `0.6.2` |
 | Reifegrad | Funktionsfähig |
 | Rolle | Alarmzentralen-Feldknoten für ESP32-S3 (Familie: Field Nodes, übergeordnet: ARMOR-COMMON) |
 | Technik | C++17, ESP-IDF 5.5.5, ESP32-S3 |
@@ -181,6 +181,7 @@ Dies ist kein zertifiziertes Alarmsystem ([docs/SAFETY.md](docs/SAFETY.md)): Es 
 | `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | Der Rückleseanschluss, die Millivolt, unter denen die Leitung kurzgeschlossen ist und bis zu denen die Sirene da ist (darüber ist die Leitung unterbrochen), die Zeit, die ein Messwert halten muss, um eine Störung zu melden oder aufzuheben (100-60000 ms), und ob die Leitung auch gelesen wird, während die Sirene ertönt |
 | `siren_loop.block_arming` | off | Scharfschalten ohne `force` verweigern, solange die Verkabelung der Sirene gestört ist (wie bei einer offenen Zone); die Störung wird in jedem Fall gemeldet |
 | `server.persist_replay_floor` | off | Den höchsten Zeitstempel eines angenommenen signierten Befehls und die letzte Sequenznummer des Zonenfeeds (höchstens alle 30 s) im Flash behalten, damit ein Neustart sie nicht vergisst; aus, weil es den Flash beschreibt |
+| `server.refuse_pause_armed` | on | Eine vom Server angeordnete `pause` oder `standby` ablehnen, solange die Anlage scharf ist, herunterzählt oder läutet (`busy_guarding`); ein Neustart wird weiterhin angenommen. Mit `false` gespeicherte Einstellungen bleiben; zum Abschalten *Pause im scharfen Zustand ablehnen* im Panel abwählen, speichern und neu starten. Nicht auf einer Platine erprobt |
 
 Erneutes Auslösen nach einem Stummschalten ist auf 3 begrenzt (`kMaxResounds`). Das Sirenenrelais startet bei jedem Neustart offen und fällt nicht auf offen, wenn der Broker verloren geht.
 
