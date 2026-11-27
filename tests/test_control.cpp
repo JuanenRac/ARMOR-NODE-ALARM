@@ -485,6 +485,22 @@ static void test_the_rate_limit_is_for_a_restart() {
   CHECK(quick.arm(1100, kUp, Operation::kIdentify, Busy::kNone, kRunning, kOther).refusal == Refusal::kNone);
 }
 
+// A panel that guards (server.refuse_pause_armed): it may restart, what was armed survives it, but it does not stop watching.
+static void test_a_guarding_panel_refuses_to_stop_watching() {
+  CHECK(std::string(control::refusal_name(Refusal::kBusyGuarding)) == "busy_guarding");
+  for (const Operation o : kAll) {
+    const bool refused = o == Operation::kPause || o == Operation::kStandby;
+    CHECK(control::refused_by(o, Busy::kGuarding) == refused);
+    const control::Situation fits = (o == Operation::kResume) ? control::Situation{State::kPaused, false} : control::Situation{State::kRunning, o == Operation::kMaintenanceOff};
+    control::Gate gate;
+    const control::Gate::Armed armed = gate.arm(1000, kUp, o, Busy::kGuarding, fits, kToken);
+    CHECK(armed.refusal == (refused ? Refusal::kBusyGuarding : Refusal::kNone));
+    control::Gate later;
+    later.arm(1000, kUp, o, Busy::kNone, fits, kToken);
+    CHECK(later.execute(3000, kUp, o, Busy::kGuarding, fits, kToken) == (refused ? Refusal::kBusyGuarding : Refusal::kNone));
+  }
+}
+
 static void test_a_busy_node_says_what_it_is_doing() {
   const struct { Busy busy; Refusal refusal; const char* name; } cases[] = {
       {Busy::kUpdate, Refusal::kBusyUpdate, "busy_update"}, {Busy::kUpload, Refusal::kBusyUpload, "busy_upload"},
@@ -1167,6 +1183,7 @@ int main(int argc, char** argv) {
   test_a_new_arm_replaces_the_old_token();
   test_a_token_from_random_bytes();
   test_the_rate_limit_is_for_a_restart();
+  test_a_guarding_panel_refuses_to_stop_watching();
   test_a_busy_node_says_what_it_is_doing();
   test_already_in_state();
   test_a_pause_ends_by_itself();
