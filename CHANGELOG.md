@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.6.1] - Refuse a pause while guarding and a panel that does not stay stuck
+
 - **Pause and standby can be refused while the panel guards:** with the new setting (off by default) the node answers `busy_guarding` to a pause or a standby while armed, counting down or ringing; a restart is still taken. Tested on a computer; not tried on the node.
 - **The shared tools read the output of processes as UTF-8:** `tools/status_lights.py`, `tools/sync_manifests.py` and `tools/universal_readme_check.py` are the current copies; on Windows a character outside the code page no longer breaks a check.
 - **The memory gate of the panel cannot stay shut for ever:** when the internal memory settled between the levels that close it and the levels that open it, new panel connections were refused until the node was restarted by hand, although the node kept reporting. It now also opens after about a minute over the closing levels. Tested on a computer; not tried on a board.
