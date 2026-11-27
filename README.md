@@ -23,13 +23,13 @@
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
   <img src="https://img.shields.io/badge/Tests-33%20host%20programs-2ea44f.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/Version-0.6.0-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.6.1-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
 </p>
 
 ---
 
-**Honesty check - what runs today:** What exists is the **core of the alarm** (what a zone is, how a wired loop read by the ADC becomes a state, the panel's rules: arming, delays, the alarm, the siren, the PIN with lockout) and the **firmware of the node** built on it (settings, web panel, messages with the server, the Zigbee radio's bridge, a Zigbee coordinator on the network, relays, Bluetooth, signed updates), which builds for both boards; the core, the settings, the messages and the panel in a real browser against a stand-in node are tested on a computer with 496,974 checks in 33 test programs. **Nothing has run on a board or on a real installation, no zone has been wired and no siren connected, the node's own Zigbee conversation with a coordinator (local or on the network) is written and tested against a stand-in coordinator but has never run against a real coordinator or a real sensor, and this is not a certified alarm system.**
+**Honesty check - what runs today:** What exists is the **core of the alarm** (what a zone is, how a wired loop read by the ADC becomes a state, the panel's rules: arming, delays, the alarm, the siren, the PIN with lockout) and the **firmware of the node** built on it (settings, web panel, messages with the server, the Zigbee radio's bridge, a Zigbee coordinator on the network, relays, Bluetooth, signed updates), which builds for both boards; the core, the settings, the messages and the panel in a real browser against a stand-in node are tested on a computer in 33 test programs. **Nothing has run on a board or on a real installation, no zone has been wired and no siren connected, the node's own Zigbee conversation with a coordinator (local or on the network) is written and tested against a stand-in coordinator but has never run against a real coordinator or a real sensor, and this is not a certified alarm system.**
 
 ---
 
@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Version | `0.6.0` |
+| Version | `0.6.1` |
 | Maturity | Functional |
 | Role | Alarm panel field node for ESP32-S3 (family: Field Nodes, parent: ARMOR-COMMON) |
 | Stack | C++17, ESP-IDF 5.5.5, ESP32-S3 |
@@ -58,7 +58,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟢 | The firmware builds in the ESP-IDF 5.5.5 container for both boards (Wi-Fi and Ethernet). |
-| Tests | 🟢 | 496,974 checks in 33 host programs pass (`ctest`): the zones, the wired loops read by the ADC, the arming, delays, siren and PIN rules, the settings and the messages. |
+| Tests | 🟢 | All checks of 33 host programs pass (`ctest`): the zones, the wired loops read by the ADC, the arming, delays, siren and PIN rules, the settings and the messages. |
 | Protocols and data | 🟠 | The node's own Zigbee conversation with a coordinator, local or on the network, is tested only against a stand-in coordinator; it has never met a real coordinator or sensor. |
 | Interface | 🟡 | The web panel is exercised in a real browser against a stand-in node, not on a board. |
 | Hardware | 🔴 | No board built, no zone wired and no siren or Zigbee coordinator connected: nothing has run on a real installation. |

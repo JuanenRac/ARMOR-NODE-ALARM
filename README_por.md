@@ -23,13 +23,13 @@
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
   <img src="https://img.shields.io/badge/Tests-33%20host%20programs-2ea44f.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/Version-0.6.0-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.6.1-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
 </p>
 
 ---
 
-**Verificação de honestidade - o que funciona hoje:** O que existe é o **núcleo do alarme** (o que é uma zona, como um laço com fios lido pelo ADC se torna um estado, as regras da central: armar, atrasos, o alarme, a sirene, o PIN com bloqueio) e o **firmware do nó** construído sobre ele (definições, painel web, mensagens com o servidor, a ponte do rádio Zigbee, um coordenador Zigbee na rede, relés, Bluetooth, atualizações assinadas), que compila para as duas placas; o núcleo, as definições, as mensagens e o painel num navegador real contra um nó de substituição são testados num computador com 496 974 verificações em 33 programas de teste. **Nada correu numa placa nem numa instalação real, nenhuma zona foi ligada com fios nem sirene ligada, a conversa Zigbee do próprio nó com um coordenador (local ou na rede) está escrita e testada contra um coordenador de substituição mas nunca correu contra um coordenador ou sensor reais, e isto não é um sistema de alarme certificado.**
+**Verificação de honestidade - o que funciona hoje:** O que existe é o **núcleo do alarme** (o que é uma zona, como um laço com fios lido pelo ADC se torna um estado, as regras da central: armar, atrasos, o alarme, a sirene, o PIN com bloqueio) e o **firmware do nó** construído sobre ele (definições, painel web, mensagens com o servidor, a ponte do rádio Zigbee, um coordenador Zigbee na rede, relés, Bluetooth, atualizações assinadas), que compila para as duas placas; o núcleo, as definições, as mensagens e o painel num navegador real contra um nó de substituição são testados num computador em 33 programas de teste. **Nada correu numa placa nem numa instalação real, nenhuma zona foi ligada com fios nem sirene ligada, a conversa Zigbee do próprio nó com um coordenador (local ou na rede) está escrita e testada contra um coordenador de substituição mas nunca correu contra um coordenador ou sensor reais, e isto não é um sistema de alarme certificado.**
 
 ---
 
@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Versão | `0.6.0` |
+| Versão | `0.6.1` |
 | Maturidade | Funcional |
 | Função | Nó de campo central de alarme para ESP32-S3 (família: Field Nodes, pai: ARMOR-COMMON) |
 | Tecnologia | C++17, ESP-IDF 5.5.5, ESP32-S3 |
@@ -58,7 +58,7 @@ Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É 
 | Área | Estado | O que significa aqui |
 |---|---|---|
 | Software | 🟢 | O firmware compila no contentor ESP-IDF 5.5.5 para as duas placas (Wi-Fi e Ethernet). |
-| Testes | 🟢 | Passam 496.974 verificações em 33 programas de anfitrião (`ctest`): as zonas, os laços cablados lidos pelo ADC, as regras de armar, atrasos, sirene e PIN, as definições e as mensagens. |
+| Testes | 🟢 | Passam todas as verificações em 33 programas de anfitrião (`ctest`): as zonas, os laços cablados lidos pelo ADC, as regras de armar, atrasos, sirene e PIN, as definições e as mensagens. |
 | Protocolos e dados | 🟠 | A conversa Zigbee do próprio nó com um coordenador, local ou na rede, só foi testada contra um coordenador simulado; nunca encontrou um coordenador ou um sensor reais. |
 | Interface | 🟡 | O painel web foi exercitado num navegador real contra um nó simulado, não numa placa. |
 | Hardware | 🔴 | Nenhuma placa construída, nenhuma zona cablada e nenhuma sirene ou coordenador Zigbee ligados: nada funcionou numa instalação real. |

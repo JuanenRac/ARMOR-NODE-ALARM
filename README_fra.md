@@ -23,13 +23,13 @@
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
   <img src="https://img.shields.io/badge/Tests-33%20host%20programs-2ea44f.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/Version-0.6.0-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.6.1-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturité">
 </p>
 
 ---
 
-**Vérification d'honnêteté - ce qui fonctionne aujourd'hui :** Ce qui existe, c'est le **cœur de l'alarme** (ce qu'est une zone, comment une boucle câblée lue par l'ADC devient un état, les règles de la centrale : armement, temporisations, l'alarme, la sirène, le PIN avec verrouillage) et le **firmware du nœud** construit dessus (réglages, panneau web, messages avec le serveur, le pont de la radio Zigbee, un coordinateur Zigbee sur le réseau, relais, Bluetooth, mises à jour signées), qui se compile pour les deux cartes ; le cœur, les réglages, les messages et le panneau dans un vrai navigateur contre un nœud factice sont testés sur un ordinateur avec 496 974 vérifications dans 33 programmes de test. **Rien n'a tourné sur une carte ni sur une installation réelle, aucune zone n'a été câblée ni aucune sirène connectée, la conversation Zigbee du nœud avec un coordinateur (local ou sur le réseau) est écrite et testée contre un coordinateur factice mais n'a jamais tourné contre un vrai coordinateur ni un vrai capteur, et ce n'est pas un système d'alarme certifié.**
+**Vérification d'honnêteté - ce qui fonctionne aujourd'hui :** Ce qui existe, c'est le **cœur de l'alarme** (ce qu'est une zone, comment une boucle câblée lue par l'ADC devient un état, les règles de la centrale : armement, temporisations, l'alarme, la sirène, le PIN avec verrouillage) et le **firmware du nœud** construit dessus (réglages, panneau web, messages avec le serveur, le pont de la radio Zigbee, un coordinateur Zigbee sur le réseau, relais, Bluetooth, mises à jour signées), qui se compile pour les deux cartes ; le cœur, les réglages, les messages et le panneau dans un vrai navigateur contre un nœud factice sont testés sur un ordinateur dans 33 programmes de test. **Rien n'a tourné sur une carte ni sur une installation réelle, aucune zone n'a été câblée ni aucune sirène connectée, la conversation Zigbee du nœud avec un coordinateur (local ou sur le réseau) est écrite et testée contre un coordinateur factice mais n'a jamais tourné contre un vrai coordinateur ni un vrai capteur, et ce n'est pas un système d'alarme certifié.**
 
 ---
 
@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Version | `0.6.0` |
+| Version | `0.6.1` |
 | Maturité | Fonctionnel |
 | Rôle | Nœud de terrain centrale d'alarme pour ESP32-S3 (famille : Field Nodes, parent : ARMOR-COMMON) |
 | Technologie | C++17, ESP-IDF 5.5.5, ESP32-S3 |
@@ -58,7 +58,7 @@ Chaque ligne est une partie de ce dépôt et le feu dit où elle en est aujourd'
 | Domaine | État | Ce que cela veut dire ici |
 |---|---|---|
 | Logiciel | 🟢 | Le firmware compile dans le conteneur ESP-IDF 5.5.5 pour les deux cartes (Wi-Fi et Ethernet). |
-| Tests | 🟢 | 496 974 vérifications dans 33 programmes d'hôte réussissent (`ctest`) : les zones, les boucles câblées lues par le CAN, les règles d'armement, de temporisation, de sirène et de PIN, les réglages et les messages. |
+| Tests | 🟢 | Toutes les vérifications dans 33 programmes d'hôte réussissent (`ctest`) : les zones, les boucles câblées lues par le CAN, les règles d'armement, de temporisation, de sirène et de PIN, les réglages et les messages. |
 | Protocoles et données | 🟠 | La conversation Zigbee du nœud lui-même avec un coordinateur, local ou sur le réseau, n'est testée que contre un coordinateur simulé ; elle n'a jamais rencontré un vrai coordinateur ni un vrai capteur. |
 | Interface | 🟡 | Le panneau web a été essayé dans un vrai navigateur contre un nœud simulé, pas sur une carte. |
 | Matériel | 🔴 | Aucune carte construite, aucune zone câblée et ni sirène ni coordinateur Zigbee connectés : rien n'a tourné sur une installation réelle. |
