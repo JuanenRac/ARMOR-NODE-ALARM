@@ -138,7 +138,7 @@ struct ServerLink {
   PinChoice disarm_pin = PinChoice::kPolicy;
   std::string zone_feed_key;   // 64 hexadecimal digits, from Studio (GET /api/v1/alarm/zone-feed/key/{node}); a secret like the PIN, never shown again
   bool persist_replay_floor = false;   // true: the highest timestamp of a signed command taken and the last sequence number of the zone feed are kept in flash (at most every 30 s), so that a restart does not forget them. Off by default: it writes flash
-  bool refuse_pause_armed = false;   // true: while the panel is armed, counting down or ringing, a pause or a standby ordered by the server is refused (busy_guarding); a restart is still taken. Off by default
+  bool refuse_pause_armed = true;   // true: while the panel is armed, counting down or ringing, a pause or a standby ordered by the server is refused (busy_guarding); a restart is still taken. On by default; a stored false is kept
   bool control_require_sig = false;   // true: the orders of the server to the node itself (armor/control/...: pause, standby, restart...) are read only when signed with command_key; with no valid key none is read. Off by default, so a server that does not sign them yet keeps working
   std::string command_key;     // 64 hexadecimal digits, the `command_key` of GET /api/v1/admin/nodes/{id}/token of the server (while its option commands.require_sig is on): with a key here the panel takes only commands the server signed (command_sig.hpp); empty: any command of the contract, as before; a secret, never shown again
 };

@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.6.2] - Pause refused while guarding by default
+
+- **A pause or a standby is now refused while the panel guards, by default:** `server.refuse_pause_armed` is on. While armed, counting down or ringing the node answers `busy_guarding` to both; a restart is still taken. Tested on a computer; not tried on a board.
+- **What a node already set up does:** stored settings without the key take the new default at the next start; a stored `false` is kept. Version 0.6.1, whose default was off, stored `false` if its settings were saved while it ran: turn it on in the panel there.
+- **To turn it off:** clear *Refuse pause while armed* in the panel (or set `server.refuse_pause_armed` to `false`), save and restart the node.
+
 ## [0.6.1] - Refuse a pause while guarding and a panel that does not stay stuck
 
 - **Pause and standby can be refused while the panel guards:** with the new setting (off by default) the node answers `busy_guarding` to a pause or a standby while armed, counting down or ringing; a restart is still taken. Tested on a computer; not tried on the node.

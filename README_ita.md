@@ -23,7 +23,7 @@
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
   <img src="https://img.shields.io/badge/Tests-33%20host%20programs-2ea44f.svg" alt="Test">
-  <img src="https://img.shields.io/badge/Version-0.6.1-0f6cbd.svg" alt="Versione">
+  <img src="https://img.shields.io/badge/Version-0.6.2-0f6cbd.svg" alt="Versione">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturità">
 </p>
 
@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Versione | `0.6.1` |
+| Versione | `0.6.2` |
 | Maturità | Funzionale |
 | Ruolo | Nodo di campo centrale di allarme per ESP32-S3 (famiglia: Field Nodes, padre: ARMOR-COMMON) |
 | Tecnologia | C++17, ESP-IDF 5.5.5, ESP32-S3 |
@@ -181,6 +181,7 @@ Non è un sistema di allarme certificato ([docs/SAFETY.md](docs/SAFETY.md)): è 
 | `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | Il pin di ritorno, i millivolt sotto i quali il filo è in cortocircuito e fino ai quali la sirena c'è (sopra il filo è tagliato), il tempo che una lettura deve durare per segnalare o togliere un guasto (100-60000 ms) e se la linea si legge anche mentre la sirena suona |
 | `siren_loop.block_arming` | off | Rifiutare l'armamento senza `force` finché il cablaggio della sirena è in guasto (come con una zona aperta); il guasto è segnalato comunque |
 | `server.persist_replay_floor` | off | Conservare in flash (al massimo ogni 30 s) il timestamp più alto di un comando firmato accettato e l'ultimo numero di sequenza del flusso delle zone, così che un riavvio non li dimentichi; spento perché scrive in flash |
+| `server.refuse_pause_armed` | on | Rifiutare una `pause` o uno `standby` ordinati dal server mentre la centrale è inserita, in conto alla rovescia o suona (`busy_guarding`); il riavvio è ancora accettato. Le impostazioni salvate con `false` restano; per spegnerlo, togliere la spunta a *Rifiutare la pausa se inserito* nel pannello, salvare e riavviare. Non provato su una scheda |
 
 I nuovi suoni dopo un silenzio sono limitati a 3 (`kMaxResounds`). Il relè della sirena parte aperto a ogni riavvio e non cade aperto se si perde il broker.
 

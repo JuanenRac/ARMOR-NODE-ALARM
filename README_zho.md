@@ -23,7 +23,7 @@
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
   <img src="https://img.shields.io/badge/Tests-33%20host%20programs-2ea44f.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/Version-0.6.1-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.6.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
 </p>
 
@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| 版本 | `0.6.1` |
+| 版本 | `0.6.2` |
 | 成熟度 | 可用 |
 | 角色 | ESP32-S3 报警面板现场节点（家族：Field Nodes，上级：ARMOR-COMMON） |
 | 技术栈 | C++17, ESP-IDF 5.5.5, ESP32-S3 |
@@ -181,6 +181,7 @@ ARMOR-NODE-ALARM 是报警主机：防区、布防、延时、警笛和 PIN 都�
 | `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | 回读引脚；低于多少毫伏为线路短路、不超过多少毫伏为警报器在位（高于则断线）；读数需持续多久才报告或解除故障（100–60000 毫秒）；警报器鸣响时是否也读取 |
 | `siren_loop.block_arming` | off | 在警报器接线故障期间，没有 `force` 就拒绝布防（如同有打开的防区）；无论如何都会报告故障 |
 | `server.persist_replay_floor` | off | 把已接受的签名命令的最大时间戳和区域信息流的最后序列号保存到闪存（最多每 30 秒一次），重启后不会忘记；因为会写闪存，默认关闭 |
+| `server.refuse_pause_armed` | on | 面板已布防、倒计时中或正在鸣响时，拒绝服务器下达的 `pause` 和 `standby`（`busy_guarding`）；仍接受重启。以 `false` 保存的设置保持不变；要关闭，请在面板中取消勾选“布防时拒绝暂停”，保存并重启。未在电路板上试验 |
 
 静音后的再次鸣响限制为 3 次（`kMaxResounds`）。警笛继电器每次重启时处于断开状态，代理丢失时也不会自动断开。
 

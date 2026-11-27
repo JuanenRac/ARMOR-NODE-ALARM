@@ -23,7 +23,7 @@
   <img src="https://img.shields.io/badge/Zones-wired%20%2B%20Zigbee-ffb020.svg" alt="Zones">
   <img src="https://img.shields.io/badge/Checks-489%2C145-2ea44f.svg" alt="Checks">
   <img src="https://img.shields.io/badge/Tests-33%20host%20programs-2ea44f.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/Version-0.6.1-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.6.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
 </p>
 
@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Version | `0.6.1` |
+| Version | `0.6.2` |
 | Maturity | Functional |
 | Role | Alarm panel field node for ESP32-S3 (family: Field Nodes, parent: ARMOR-COMMON) |
 | Stack | C++17, ESP-IDF 5.5.5, ESP32-S3 |
@@ -181,6 +181,7 @@ This is not a certified alarm system ([docs/SAFETY.md](docs/SAFETY.md)): it is a
 | `siren_loop.pin`, `short_below_mv`, `ok_below_mv`, `hold_ms`, `clear_ms`, `read_while_sounding` | -1, 300, 2000, 3000, 3000, off | The return pin, the millivolts below which the wire is shorted and up to which the siren is there (above it the wire is cut), the time a reading must hold to report or lift a fault (100-60000 ms) and whether the line is also read while the siren sounds |
 | `siren_loop.block_arming` | off | Refuse to arm without `force` while the siren's wiring is in fault (as with an open zone); the fault is reported either way |
 | `server.persist_replay_floor` | off | Keep in flash (at most every 30 s) the highest timestamp of a signed command taken and the last sequence number of the zone feed, so that a restart does not forget them; off because it writes flash |
+| `server.refuse_pause_armed` | on | Refuse a `pause` or a `standby` ordered by the server while the panel is armed, counting down or ringing (`busy_guarding`); a restart is still taken. Settings stored with `false` are kept; to turn it off, clear *Refuse pause while armed* in the panel, save and restart. Not tried on a board |
 
 Re-sounds after a silence are limited to 3 (`kMaxResounds`). The siren relay starts open on every restart and does not fall open when the broker is lost.
 
