@@ -151,6 +151,8 @@ extern "C" void app_main() {
       const std::int64_t wall = armor::mqtt_link::clock_is_set() ? static_cast<std::int64_t>(armor::mqtt_link::wall_clock_ms()) : 0;
       return armor::command_sig::control_authorized(require, key, payload, nonces, wall, plain);
     };
+    // A pause or a standby would leave the house unwatched: refused while the panel guards, when the owner asked for it (server.refuse_pause_armed).
+    if (settings.server.refuse_pause_armed) control.busy = [] { return armor::manager::guarding() ? armor::control::Busy::kGuarding : armor::control::Busy::kNone; };
     armor::node_control::start(control);
   }
   // The relays first (every one starts open), then the alarm that drives the siren through one of them. A node in setup guards nothing yet.

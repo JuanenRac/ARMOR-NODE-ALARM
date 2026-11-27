@@ -363,7 +363,7 @@ function networkPage() {
       field("otaCheckBoard", "security.ota_check_board", { type: "checkbox" }),
       field("otaRequireMark", "security.ota_require_board_mark", { type: "checkbox" }), note(t("otaBoardNote"), "info"),
       field("otaInvalidate", "security.ota_invalidate_rejected", { type: "checkbox" }),
-      field("controlRequireSig", "security.control_require_sig", { type: "checkbox" }), field("commandKey", "server.command_key", { type: "password" })),
+      field("controlRequireSig", "security.control_require_sig", { type: "checkbox" }), field("refusePauseArmed", "server.refuse_pause_armed", { type: "checkbox" }), field("commandKey", "server.command_key", { type: "password" })),
     isAdmin() ? card(t("configBackupTitle"),
       el("div", { class: "row" },
         el("button", { class: "b", tip: "exportConfig", onclick: exportConfig }, t("exportConfig")),
